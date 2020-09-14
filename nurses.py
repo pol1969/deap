@@ -112,7 +112,7 @@ class NurseSchedulingProblem:
             # iterate over the shifts of each weeks:
             for i in range(0, self.weeks * self.shiftsPerWeek, self.shiftsPerWeek):
                 # count all the '1's over the week:
-                import pdb; pdb.set_trace()
+   #             import pdb; pdb.set_trace()
                 weeklyShifts = sum(nurseShifts[i:i + self.shiftsPerWeek])
                 weeklyShiftsList.append(weeklyShifts)
                 if weeklyShifts > self.maxShiftsPerWeek:
@@ -147,6 +147,7 @@ class NurseSchedulingProblem:
         :return: count of violations found
         """
         violations = 0
+#        import pdb; pdb.set_trace()
         for nurseIndex, shiftPreference in enumerate(self.shiftPreference):
             # duplicate the shift-preference over the days of the period
             preference = shiftPreference * (self.shiftsPerWeek // self.shiftPerDay)
