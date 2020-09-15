@@ -5,7 +5,7 @@ class NurseSchedulingProblem:
     """This class encapsulates the Nurse Scheduling problem
     """
  
-    def __init__(self, hardConstraintPenalty):
+    def __init__(self, hardConstraintPenalty,docs):
         """
         :param hardConstraintPenalty: the penalty factor for a hard-constraint violation
         """
@@ -13,8 +13,8 @@ class NurseSchedulingProblem:
  
         # list of nurses:
         self.nurses = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
- 
-        # nurses' respective shift preferences - morning, evening, night:
+        self.nurses = docs 
+       # nurses' respective shift preferences - morning, evening, night:
         self.shiftPreference = [[1, 0, 0], [1, 1, 0], [0, 0, 1], [0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 1, 1], [1, 1, 1]]
  
         # min and max number of nurses allowed for each shift - morning, evening, night:
