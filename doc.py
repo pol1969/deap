@@ -12,7 +12,6 @@ class NurseSchedulingProblem:
         self.hardConstraintPenalty = hardConstraintPenalty
  
         # list of nurses:
-        self.nurses = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
         self.nurses = docs 
        # nurses' respective shift preferences - morning, evening, night:
         self.shiftPreference = [[1, 0, 0], [1, 1, 0], [0, 0, 1], [0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 1, 1], [1, 1, 1]]
@@ -191,7 +190,9 @@ class NurseSchedulingProblem:
 # testing the class:
 def main():
     # create a problem instance:
-    nurses = NurseSchedulingProblem(10)
+
+    docs = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+    nurses = NurseSchedulingProblem(10,docs)
  
     randomSolution = np.random.randint(2, size=len(nurses))
     print("Random Solution = ")
