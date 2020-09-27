@@ -1,4 +1,5 @@
 import numpy as np
+import pdb
  
  
 class NurseSchedulingProblem:
@@ -193,8 +194,10 @@ def main():
 
     docs = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     nurses = NurseSchedulingProblem(10,docs)
+ #   pdb.set_trace()
  
     randomSolution = np.random.randint(2, size=len(nurses))
+
     print("Random Solution = ")
     print(randomSolution)
     print()
