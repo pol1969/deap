@@ -4,6 +4,7 @@ from deap import tools
  
 import random
 import numpy
+import pandas as pd
  
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -27,11 +28,10 @@ random.seed(RANDOM_SEED)
  
 toolbox = base.Toolbox()
 
+p = pd.read_csv("lk_1.csv")
+docs = list(p['FAM']+' '+ p['NAME'])
 
 
-
-docs = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
- 
 # create the nurse scheduling problem instance to be used:
 nsp = doc.DocSchedulingProblem(HARD_CONSTRAINT_PENALTY,docs)
  

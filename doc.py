@@ -1,8 +1,9 @@
 import numpy as np
+import pandas as pd
 import pdb
  
  
-class NurseSchedulingProblem:
+class DocSchedulingProblem:
     """This class encapsulates the Nurse Scheduling problem
     """
  
@@ -191,20 +192,21 @@ class NurseSchedulingProblem:
 # testing the class:
 def main():
     # create a problem instance:
+    p = pd.read_csv("lk_1.csv")
+    docs = list(p['FAM']+' '+ p['NAME'])
 
-    docs = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-    nurses = NurseSchedulingProblem(10,docs)
+    doc  = DocSchedulingProblem(10,docs)
  #   pdb.set_trace()
  
-    randomSolution = np.random.randint(2, size=len(nurses))
+    randomSolution = np.random.randint(2, size=len(doc))
 
     print("Random Solution = ")
     print(randomSolution)
     print()
  
-    nurses.printScheduleInfo(randomSolution)
+    doc.printScheduleInfo(randomSolution)
  
-    print("Total Cost = ", nurses.getCost(randomSolution))
+    print("Total Cost = ", doc.getCost(randomSolution))
  
  
 if __name__ == "__main__":
