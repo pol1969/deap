@@ -13,12 +13,12 @@ class DocSchedulingProblem:
         """
         self.hardConstraintPenalty = hardConstraintPenalty
  
-        # list of nurses:
-        self.nurses = docs 
-       # nurses' respective shift preferences - morning, evening, night:
+        # list of doc:
+        self.doc = docs 
+       # doc' respective shift preferences - morning, evening, night:
         self.shiftPreference = [[1, 0, 0], [1, 1, 0], [0, 0, 1], [0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 1, 1], [1, 1, 1]]
  
-        # min and max number of nurses allowed for each shift - morning, evening, night:
+        # min and max number of doc allowed for each shift - morning, evening, night:
         self.shiftMin = [2, 2, 1]
         self.shiftMax = [3, 4, 2]
  
@@ -35,8 +35,10 @@ class DocSchedulingProblem:
     def __len__(self):
         """
         :return: the number of shifts in the schedule
+
         """
-        return len(self.nurses) * self.shiftsPerWeek * self.weeks
+ #       pdb.set_trace()
+        return len(self.doc) * self.shiftsPerWeek * self.weeks
  
  
     def getCost(self, schedule):
@@ -56,11 +58,11 @@ class DocSchedulingProblem:
         # count the various violations:
         consecutiveShiftViolations = self.countConsecutiveShiftViolations(nurseShiftsDict)
         shiftsPerWeekViolations = self.countShiftsPerWeekViolations(nurseShiftsDict)[1]
-        nursesPerShiftViolations = self.countNursesPerShiftViolations(nurseShiftsDict)[1]
+        docPerShiftViolations = self.countNursesPerShiftViolations(nurseShiftsDict)[1]
         shiftPreferenceViolations = self.countShiftPreferenceViolations(nurseShiftsDict)
  
         # calculate the cost of the violations:
-        hardContstraintViolations = consecutiveShiftViolations + nursesPerShiftViolations + shiftsPerWeekViolations
+        hardContstraintViolations = consecutiveShiftViolations + docPerShiftViolations + shiftsPerWeekViolations
         softContstraintViolations = shiftPreferenceViolations
  
         return self.hardConstraintPenalty * hardContstraintViolations + softContstraintViolations
@@ -71,12 +73,12 @@ class DocSchedulingProblem:
         :param schedule: a list of binary values describing the given schedule
         :return: a dictionary with each nurse as a key and the corresponding shifts as the value
         """
-        shiftsPerNurse = self.__len__() // len(self.nurses)
+        shiftsPerNurse = self.__len__() // len(self.doc)
         nurseShiftsDict = {}
         shiftIndex = 0
- #       import pdb; pdb.set_trace()
+  #      import pdb; pdb.set_trace()
  
-        for nurse in self.nurses:
+        for nurse in self.doc:
             nurseShiftsDict[nurse] = schedule[shiftIndex:shiftIndex + shiftsPerNurse]
             shiftIndex += shiftsPerNurse
  
@@ -123,11 +125,11 @@ class DocSchedulingProblem:
  
     def countNursesPerShiftViolations(self, nurseShiftsDict):
         """
-        Counts the number-of-nurses-per-shift violations in the schedule
+        Counts the number-of-doc-per-shift violations in the schedule
         :param nurseShiftsDict: a dictionary with a separate schedule for each nurse
         :return: count of violations found
         """
-        # sum the shifts over all nurses:
+        # sum the shifts over all doc:
         totalPerShiftList = [sum(shift) for shift in zip(*nurseShiftsDict.values())]
  
         violations = 0
@@ -153,7 +155,7 @@ class DocSchedulingProblem:
             # duplicate the shift-preference over the days of the period
             preference = shiftPreference * (self.shiftsPerWeek // self.shiftPerDay)
             # iterate over the shifts and compare to preferences:
-            shifts = nurseShiftsDict[self.nurses[nurseIndex]]
+            shifts = nurseShiftsDict[self.doc[nurseIndex]]
             for pref, shift in zip(preference, shifts):
                 if pref == 0 and shift == 1:
                     violations += 1
