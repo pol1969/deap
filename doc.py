@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import calendar as cd
 import pdb
  
  
@@ -7,13 +8,15 @@ class DocSchedulingProblem:
     """This class encapsulates the Nurse Scheduling problem
     """
  
-    def __init__(self, hardConstraintPenalty,docs):
+    def __init__(self, hardConstraintPenalty,df_docs,month,year):
         """
         :param hardConstraintPenalty: the penalty factor for a hard-constraint violation
         """
         self.hardConstraintPenalty = hardConstraintPenalty
  
         # list of doc:
+        
+        docs = list(df_docs['FAM']+' '+ df_docs['NAME'])
         self.doc = docs 
        # doc' respective shift preferences - morning, evening, night:
         self.shiftPreference = [[1, 0, 0], [1, 1, 0], [0, 0, 1], [0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 1, 1], [1, 1, 1]]
@@ -29,8 +32,11 @@ class DocSchedulingProblem:
         self.weeks = 1
  
         # useful values:
+        self.days_in_month = cd.monthrange(year,month+1)[1]
+        self.corps = 3
         self.shiftPerDay = len(self.shiftMin)
         self.shiftsPerWeek = 7 * self.shiftPerDay
+        self.shiftsPerMonth = self.corps*self.days_in_month
  
     def __len__(self):
         """
@@ -195,9 +201,8 @@ class DocSchedulingProblem:
 def main():
     # create a problem instance:
     p = pd.read_csv("lk_1.csv")
-    docs = list(p['FAM']+' '+ p['NAME'])
 
-    doc  = DocSchedulingProblem(10,docs)
+    doc  = DocSchedulingProblem(10,p)
  #   pdb.set_trace()
  
     randomSolution = np.random.randint(2, size=len(doc))

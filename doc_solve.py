@@ -11,6 +11,7 @@ import seaborn as sns
  
 import elitism
 import doc
+import datetime as dt
  
 # problem constants:
 HARD_CONSTRAINT_PENALTY = 10  # the penalty factor for a hard-constraint violation
@@ -29,11 +30,10 @@ random.seed(RANDOM_SEED)
 toolbox = base.Toolbox()
 
 p = pd.read_csv("lk_1.csv")
-docs = list(p['FAM']+' '+ p['NAME'])
 
 
 # create the nurse scheduling problem instance to be used:
-nsp = doc.DocSchedulingProblem(HARD_CONSTRAINT_PENALTY,docs)
+nsp = doc.DocSchedulingProblem(HARD_CONSTRAINT_PENALTY,p,dt.datetime.now().month+1,dt.datetime.now().year)
  
 # define a single objective, maximizing fitness strategy:
 creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
