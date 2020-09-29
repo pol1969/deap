@@ -22,7 +22,7 @@ class DocSchedulingProblem:
         self.shiftMin = [2, 2, 1]
         self.shiftMax = [3, 4, 2]
  
-        # max shifts per week allowed for each nurse
+        # max shifts per week allowed for each doc
         self.maxShiftsPerWeek = 5
  
         # number of weeks we create a schedule for:
@@ -52,14 +52,14 @@ class DocSchedulingProblem:
         if len(schedule) != self.__len__():
             raise ValueError("size of schedule list should be equal to ", self.__len__())
  
-        # convert entire schedule into a dictionary with a separate schedule for each nurse:
-        nurseShiftsDict = self.getNurseShifts(schedule)
+        # convert entire schedule into a dictionary with a separate schedule for each doc:
+        docShiftsDict = self.getDocShifts(schedule)
  
         # count the various violations:
-        consecutiveShiftViolations = self.countConsecutiveShiftViolations(nurseShiftsDict)
-        shiftsPerWeekViolations = self.countShiftsPerWeekViolations(nurseShiftsDict)[1]
-        docPerShiftViolations = self.countNursesPerShiftViolations(nurseShiftsDict)[1]
-        shiftPreferenceViolations = self.countShiftPreferenceViolations(nurseShiftsDict)
+        consecutiveShiftViolations = self.countConsecutiveShiftViolations(docShiftsDict)
+        shiftsPerWeekViolations = self.countShiftsPerWeekViolations(docShiftsDict)[1]
+        docPerShiftViolations = self.countDocsPerShiftViolations(docShiftsDict)[1]
+        shiftPreferenceViolations = self.countShiftPreferenceViolations(docShiftsDict)
  
         # calculate the cost of the violations:
         hardContstraintViolations = consecutiveShiftViolations + docPerShiftViolations + shiftsPerWeekViolations
@@ -67,95 +67,95 @@ class DocSchedulingProblem:
  
         return self.hardConstraintPenalty * hardContstraintViolations + softContstraintViolations
  
-    def getNurseShifts(self, schedule):
+    def getDocShifts(self, schedule):
         """
-        Converts the entire schedule into a dictionary with a separate schedule for each nurse
+        Converts the entire schedule into a dictionary with a separate schedule for each doc
         :param schedule: a list of binary values describing the given schedule
-        :return: a dictionary with each nurse as a key and the corresponding shifts as the value
+        :return: a dictionary with each doc as a key and the corresponding shifts as the value
         """
         shiftsPerNurse = self.__len__() // len(self.doc)
-        nurseShiftsDict = {}
+        docShiftsDict = {}
         shiftIndex = 0
   #      import pdb; pdb.set_trace()
  
-        for nurse in self.doc:
-            nurseShiftsDict[nurse] = schedule[shiftIndex:shiftIndex + shiftsPerNurse]
+        for doc in self.doc:
+            docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerNurse]
             shiftIndex += shiftsPerNurse
  
-        return nurseShiftsDict
+        return docShiftsDict
  
-    def countConsecutiveShiftViolations(self, nurseShiftsDict):
+    def countConsecutiveShiftViolations(self, docShiftsDict):
         """
         Counts the consecutive shift violations in the schedule
         Считает количество последовательных смен и штрафует за это
-        :param nurseShiftsDict: a dictionary with a separate schedule for each nurse
+        :param docShiftsDict: a dictionary with a separate schedule for each doc
         :return: count of violations found
         """
         violations = 0
-        # iterate over the shifts of each nurse:
-        for nurseShifts in nurseShiftsDict.values():
+        # iterate over the shifts of each doc:
+        for docShifts in docShiftsDict.values():
             # look for two cosecutive '1's:
    #         import pdb; pdb.set_trace()
-            for shift1, shift2 in zip(nurseShifts, nurseShifts[1:]):
+            for shift1, shift2 in zip(docShifts, docShifts[1:]):
                 if shift1 == 1 and shift2 == 1:
                     violations += 1
         return violations
  
-    def countShiftsPerWeekViolations(self, nurseShiftsDict):
+    def countShiftsPerWeekViolations(self, docShiftsDict):
         """
         Counts the max-shifts-per-week violations in the schedule
         Считает количество смен в неделю и штрафует при превышении
-        :param nurseShiftsDict: a dictionary with a separate schedule for each nurse
+        :param docShiftsDict: a dictionary with a separate schedule for each doc
         :return: count of violations found
         """
         violations = 0
         weeklyShiftsList = []
-        # iterate over the shifts of each nurse:
-        for nurseShifts in nurseShiftsDict.values():  # all shifts of a single nurse
+        # iterate over the shifts of each doc:
+        for docShifts in docShiftsDict.values():  # all shifts of a single doc
             # iterate over the shifts of each weeks:
             for i in range(0, self.weeks * self.shiftsPerWeek, self.shiftsPerWeek):
                 # count all the '1's over the week:
    #             import pdb; pdb.set_trace()
-                weeklyShifts = sum(nurseShifts[i:i + self.shiftsPerWeek])
+                weeklyShifts = sum(docShifts[i:i + self.shiftsPerWeek])
                 weeklyShiftsList.append(weeklyShifts)
                 if weeklyShifts > self.maxShiftsPerWeek:
                     violations += weeklyShifts - self.maxShiftsPerWeek
  
         return weeklyShiftsList, violations
  
-    def countNursesPerShiftViolations(self, nurseShiftsDict):
+    def countDocsPerShiftViolations(self, docShiftsDict):
         """
         Counts the number-of-doc-per-shift violations in the schedule
-        :param nurseShiftsDict: a dictionary with a separate schedule for each nurse
+        :param docShiftsDict: a dictionary with a separate schedule for each doc
         :return: count of violations found
         """
         # sum the shifts over all doc:
-        totalPerShiftList = [sum(shift) for shift in zip(*nurseShiftsDict.values())]
+        totalPerShiftList = [sum(shift) for shift in zip(*docShiftsDict.values())]
  
         violations = 0
         # iterate over all shifts and count violations:
-        for shiftIndex, numOfNurses in enumerate(totalPerShiftList):
+        for shiftIndex, numOfDocs in enumerate(totalPerShiftList):
             dailyShiftIndex = shiftIndex % self.shiftPerDay  # -> 0, 1, or 2 for the 3 shifts per day
-            if (numOfNurses > self.shiftMax[dailyShiftIndex]):
-                violations += numOfNurses - self.shiftMax[dailyShiftIndex]
-            elif (numOfNurses < self.shiftMin[dailyShiftIndex]):
-                violations += self.shiftMin[dailyShiftIndex] - numOfNurses
+            if (numOfDocs > self.shiftMax[dailyShiftIndex]):
+                violations += numOfDocs - self.shiftMax[dailyShiftIndex]
+            elif (numOfDocs < self.shiftMin[dailyShiftIndex]):
+                violations += self.shiftMin[dailyShiftIndex] - numOfDocs
  
         return totalPerShiftList, violations
  
-    def countShiftPreferenceViolations(self, nurseShiftsDict):
+    def countShiftPreferenceViolations(self, docShiftsDict):
         """
-        Counts the nurse-preferences violations in the schedule
-        :param nurseShiftsDict: a dictionary with a separate schedule for each nurse
+        Counts the doc-preferences violations in the schedule
+        :param docShiftsDict: a dictionary with a separate schedule for each doc
         :return: count of violations found
         """
         violations = 0
 #        import pdb; pdb.set_trace()
-        for nurseIndex, shiftPreference in enumerate(self.shiftPreference):
+        for docIndex, shiftPreference in enumerate(self.shiftPreference):
             # duplicate the shift-preference over the days of the period
             preference = shiftPreference * (self.shiftsPerWeek // self.shiftPerDay)
             # iterate over the shifts and compare to preferences:
-            shifts = nurseShiftsDict[self.doc[nurseIndex]]
+            shifts = docShiftsDict[self.doc[docIndex]]
             for pref, shift in zip(preference, shifts):
                 if pref == 0 and shift == 1:
                     violations += 1
@@ -167,26 +167,26 @@ class DocSchedulingProblem:
         Prints the schedule and violations details
         :param schedule: a list of binary values describing the given schedule
         """
-        nurseShiftsDict = self.getNurseShifts(schedule)
+        docShiftsDict = self.getDocShifts(schedule)
  
-        print("Schedule for each nurse:")
-        for nurse in nurseShiftsDict:  # all shifts of a single nurse
-            print(nurse, ":", nurseShiftsDict[nurse])
+        print("Schedule for each doc:")
+        for doc in docShiftsDict:  # all shifts of a single doc
+            print(doc, ":", docShiftsDict[doc])
  
-        print("consecutive shift violations = ", self.countConsecutiveShiftViolations(nurseShiftsDict))
+        print("consecutive shift violations = ", self.countConsecutiveShiftViolations(docShiftsDict))
         print()
  
-        weeklyShiftsList, violations = self.countShiftsPerWeekViolations(nurseShiftsDict)
+        weeklyShiftsList, violations = self.countShiftsPerWeekViolations(docShiftsDict)
         print("weekly Shifts = ", weeklyShiftsList)
         print("Shifts Per Week Violations = ", violations)
         print()
  
-        totalPerShiftList, violations = self.countNursesPerShiftViolations(nurseShiftsDict)
-        print("Nurses Per Shift = ", totalPerShiftList)
-        print("Nurses Per Shift Violations = ", violations)
+        totalPerShiftList, violations = self.countDocsPerShiftViolations(docShiftsDict)
+        print("Docs Per Shift = ", totalPerShiftList)
+        print("Docs Per Shift Violations = ", violations)
         print()
  
-        shiftPreferenceViolations = self.countShiftPreferenceViolations(nurseShiftsDict)
+        shiftPreferenceViolations = self.countShiftPreferenceViolations(docShiftsDict)
         print("Shift Preference Violations = ", shiftPreferenceViolations)
         print()
  
