@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import calendar as cd
+import datetime as dt
 import pdb
  
  
@@ -44,7 +45,8 @@ class DocSchedulingProblem:
 
         """
  #       pdb.set_trace()
-        return len(self.doc) * self.shiftsPerWeek * self.weeks
+  #      return len(self.doc) * self.shiftsPerWeek * self.weeks
+        return len(self.doc) * self.corps * self.days_in_month
  
  
     def getCost(self, schedule):
@@ -79,14 +81,14 @@ class DocSchedulingProblem:
         :param schedule: a list of binary values describing the given schedule
         :return: a dictionary with each doc as a key and the corresponding shifts as the value
         """
-        shiftsPerNurse = self.__len__() // len(self.doc)
+        shiftsPerDoc = self.__len__() // len(self.doc)
         docShiftsDict = {}
         shiftIndex = 0
   #      import pdb; pdb.set_trace()
  
         for doc in self.doc:
-            docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerNurse]
-            shiftIndex += shiftsPerNurse
+            docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerDoc]
+            shiftIndex += shiftsPerDoc
  
         return docShiftsDict
  
@@ -202,14 +204,15 @@ def main():
     # create a problem instance:
     p = pd.read_csv("lk_1.csv")
 
-    doc  = DocSchedulingProblem(10,p)
- #   pdb.set_trace()
+    doc  = DocSchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
+#    pdb.set_trace()
  
     randomSolution = np.random.randint(2, size=len(doc))
 
     print("Random Solution = ")
     print(randomSolution)
     print()
+    print("Len randomSolution = ", len(randomSolution))
  
     doc.printScheduleInfo(randomSolution)
  

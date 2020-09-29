@@ -85,6 +85,7 @@ def main():
     # print best solution found:
     best = hof.items[0]
     print("-- Best Individual = ", best)
+    print("-- Best len = ", len(best))
     print("-- Best Fitness = ", best.fitness.values[0])
     print()
     print("-- Schedule = ")
