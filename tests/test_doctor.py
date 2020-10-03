@@ -26,7 +26,7 @@ def test_random_solution(setup_docs):
 
 
 def test_getInitShedule(setup_docs):
-    myInitSolution = getInitShedule(setup_docs.getDfDocs,setup_docs,dt.datetime.now().month+1,dt.datetime.now().year)
+    myInitSolution = getInitShedule(setup_docs,dt.datetime.now().month+1,dt.datetime.now().year)
 
     print("My Init Solution= ")
  #   print(myInitSolution)

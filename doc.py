@@ -17,8 +17,8 @@ class DocSchedulingProblem:
  
         # list of doc:
         
-        docs = list(df_docs['FAM']+' '+ df_docs['NAME'])
-        self.doc = docs 
+        self.docs = list(df_docs['FAM']+' '+ df_docs['NAME'])
+        self.df = df_docs
        # doc' respective shift preferences - morning, evening, night:
         self.shiftPreference = [[1, 0, 0], [1, 1, 0], [0, 0, 1], [0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 1, 1], [1, 1, 1]]
  
@@ -39,8 +39,11 @@ class DocSchedulingProblem:
         self.shiftsPerWeek = 7 * self.shiftPerDay
         self.shiftsPerMonth = self.corps*self.days_in_month
 
-    def getDfDocs():
-        return df_docs
+    def getDfDocs(self):
+        return self.df
+
+    def getDocs(self):
+        return self.docs
 
  
     def __len__(self):
@@ -50,7 +53,7 @@ class DocSchedulingProblem:
         """
  #       pdb.set_trace()
   #      return len(self.doc) * self.shiftsPerWeek * self.weeks
-        return len(self.doc) * self.corps * self.days_in_month
+        return len(self.docs) * self.corps * self.days_in_month
  
  
     def getCost(self, schedule):
@@ -86,12 +89,12 @@ class DocSchedulingProblem:
         :param schedule: a list of binary values describing the given schedule
         :return: a dictionary with each doc as a key and the corresponding shifts as the value
         """
-        shiftsPerDoc = self.__len__() // len(self.doc)
+        shiftsPerDoc = self.__len__() // len(self.docs)
         docShiftsDict = {}
         shiftIndex = 0
   #      import pdb; pdb.set_trace()
  
-        for doc in self.doc:
+        for doc in self.docs:
             docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerDoc]
             shiftIndex += shiftsPerDoc
  #       import pdb; pdb.set_trace()
@@ -170,7 +173,7 @@ class DocSchedulingProblem:
             # duplicate the shift-preference over the days of the period
             preference = shiftPreference * (self.shiftsPerWeek // self.shiftPerDay)
             # iterate over the shifts and compare to preferences:
-            shifts = docShiftsDict[self.doc[docIndex]]
+            shifts = docShiftsDict[self.docs[docIndex]]
             for pref, shift in zip(preference, shifts):
                 if pref == 0 and shift == 1:
                     violations += 1
@@ -205,8 +208,9 @@ class DocSchedulingProblem:
         print("Shift Preference Violations = ", shiftPreferenceViolations)
         print()
 
-def getInitShedule(df,doc,month,year):
+def getInitShedule(doc,month,year):
     schedule = np.random.randint(2, size=len(doc))
+    print(doc.getDocs())
     return schedule
 
 
@@ -220,7 +224,7 @@ def main():
     doc  = DocSchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
 #    pdb.set_trace()
  
-    randomSolution = getInitShedule(p,doc,dt.datetime.now().month+1,dt.datetime.now().year)
+    randomSolution = getInitShedule(doc,dt.datetime.now().month+1,dt.datetime.now().year)
 
     print("Random Solution = ")
     print(randomSolution)
