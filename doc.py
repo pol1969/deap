@@ -70,7 +70,8 @@ class DocSchedulingProblem:
         shiftPreferenceViolations = self.countShiftPreferenceViolations(docShiftsDict)
  
         # calculate the cost of the violations:
-        hardContstraintViolations = consecutiveShiftViolations + docPerShiftViolations + shiftsPerWeekViolations
+        hardContstraintViolations = consecutiveShiftViolations+docPerShiftViolations + shiftsPerWeekViolations
+
         softContstraintViolations = shiftPreferenceViolations
  
         return self.hardConstraintPenalty * hardContstraintViolations + softContstraintViolations
@@ -89,6 +90,7 @@ class DocSchedulingProblem:
         for doc in self.doc:
             docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerDoc]
             shiftIndex += shiftsPerDoc
+ #       import pdb; pdb.set_trace()
  
         return docShiftsDict
  
@@ -138,6 +140,7 @@ class DocSchedulingProblem:
         :return: count of violations found
         """
         # sum the shifts over all doc:
+        #pdb.set_trace()
         totalPerShiftList = [sum(shift) for shift in zip(*docShiftsDict.values())]
  
         violations = 0
