@@ -38,6 +38,10 @@ class DocSchedulingProblem:
         self.shiftPerDay = len(self.shiftMin)
         self.shiftsPerWeek = 7 * self.shiftPerDay
         self.shiftsPerMonth = self.corps*self.days_in_month
+
+    def getDfDocs():
+        return df_docs
+
  
     def __len__(self):
         """
@@ -200,6 +204,12 @@ class DocSchedulingProblem:
         shiftPreferenceViolations = self.countShiftPreferenceViolations(docShiftsDict)
         print("Shift Preference Violations = ", shiftPreferenceViolations)
         print()
+
+def getInitShedule(df,doc,month,year):
+    schedule = np.random.randint(2, size=len(doc))
+    return schedule
+
+
  
  
 # testing the class:
@@ -210,7 +220,7 @@ def main():
     doc  = DocSchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
 #    pdb.set_trace()
  
-    randomSolution = np.random.randint(2, size=len(doc))
+    randomSolution = getInitShedule(p,doc,dt.datetime.now().month+1,dt.datetime.now().year)
 
     print("Random Solution = ")
     print(randomSolution)
