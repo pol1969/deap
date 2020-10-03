@@ -45,6 +45,14 @@ class DocSchedulingProblem:
     def getDocs(self):
         return self.docs
 
+    def getCorps(self):
+        return self.corps
+
+    def getRealDejs(self):
+        d = self.df.query('CORPUS!=2 and CORPUS!=0')
+        return d
+
+
  
     def __len__(self):
         """
@@ -210,7 +218,8 @@ class DocSchedulingProblem:
 
 def getInitShedule(doc,month,year):
     schedule = np.random.randint(2, size=len(doc))
-    print(doc.getDocs())
+    r = np.random.randint(0,len(doc.getDocs())-1)
+    print(r, doc.getDocs()[r]) 
     return schedule
 
 

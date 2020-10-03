@@ -37,4 +37,6 @@ def test_getInitShedule(setup_docs):
  
     print("Total Cost myInitSolution = ", setup_docs.getCost(myInitSolution))
  
-
+def test_getRealDejs(setup_docs):
+    print(setup_docs.getDfDocs())
+    print (setup_docs.getRealDejs())
