@@ -19,24 +19,23 @@ def test_random_solution(setup_docs):
     print()
     print("Len randomSolution = ", len(randomSolution))
  
-#    setup_docs.printScheduleInfo(randomSolution)
+    setup_docs.printScheduleInfo(randomSolution)
  
     print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
 
 
 def test_getInitShedule(setup_docs):
-    myInitSolution = getInitShedule(setup_docs,dt.datetime.now().month+1,dt.datetime.now().year)
+    myInitSolution = getInitShedule(setup_docs)
+    print()
 
     print("My Init Solution= ")
  #   print(myInitSolution)
-    print()
     print("Len myInitSolution = ", len(myInitSolution))
  
-#    setup_docs.printScheduleInfo(myInitSolution)
+    setup_docs.printScheduleInfo(myInitSolution)
  
     print("Total Cost myInitSolution = ", setup_docs.getCost(myInitSolution))
  
 def test_getRealDejs(setup_docs):
-    print(setup_docs.getDfDocs())
-    print (setup_docs.getRealDejs())
+    assert len(setup_docs.getDfDocs())>len(setup_docs.getRealDejs())

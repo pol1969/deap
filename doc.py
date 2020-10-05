@@ -33,8 +33,10 @@ class DocSchedulingProblem:
         self.weeks = 1
  
         # useful values:
-        self.days_in_month = cd.monthrange(year,month+1)[1]
+        self.days_in_month = cd.monthrange(year,month)[1]
+ #       pdb.set_trace()
         self.corps = 3
+        self.realDejs = self.getRealDejs()
         self.shiftPerDay = len(self.shiftMin)
         self.shiftsPerWeek = 7 * self.shiftPerDay
         self.shiftsPerMonth = self.corps*self.days_in_month
@@ -52,6 +54,10 @@ class DocSchedulingProblem:
         d = self.df.query('CORPUS!=2 and CORPUS!=0')
         return d
 
+    def getDaysInMonth(self):
+        return self.days_in_month
+
+
 
  
     def __len__(self):
@@ -61,7 +67,7 @@ class DocSchedulingProblem:
         """
  #       pdb.set_trace()
   #      return len(self.doc) * self.shiftsPerWeek * self.weeks
-        return len(self.docs) * self.corps * self.days_in_month
+        return self.corps * self.days_in_month*self.realDejs.shape[0]
  
  
     def getCost(self, schedule):
@@ -97,10 +103,12 @@ class DocSchedulingProblem:
         :param schedule: a list of binary values describing the given schedule
         :return: a dictionary with each doc as a key and the corresponding shifts as the value
         """
-        shiftsPerDoc = self.__len__() // len(self.docs)
+ #       shiftsPerDoc = self.__len__() // len(self.realDejs)
+        shiftsPerDoc = self.corps*self.days_in_month
+
         docShiftsDict = {}
         shiftIndex = 0
-  #      import pdb; pdb.set_trace()
+#        import pdb; pdb.set_trace()
  
         for doc in self.docs:
             docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerDoc]
@@ -216,10 +224,31 @@ class DocSchedulingProblem:
         print("Shift Preference Violations = ", shiftPreferenceViolations)
         print()
 
-def getInitShedule(doc,month,year):
-    schedule = np.random.randint(2, size=len(doc))
-    r = np.random.randint(0,len(doc.getDocs())-1)
-    print(r, doc.getDocs()[r]) 
+def getInitShedule(doc):
+#1 Взять случайного дежуранта из списка
+#2 Рассчитать среднее количество дежурств на дежуранта
+#3 Генерировать максимально разбросанные даты дежурств
+#4 Проверить совпадения по уже поставленным с учетом корпусов, 	корпуса можно делить поровну
+#5 Если есть совпадения, сдвинуть на один день
+#6 Повторить пункт 4
+#7 Проверить минимальное расстояние между дежурствами
+ 
+#    pdb.set_trace()
+    #количество дежурств в следующем месяце
+    shifts = len(doc)
+
+    #генерировать массив нулей по количеству дежурств
+    schedule = np.zeros(shifts,dtype=np.int8)
+    
+    #генерировать случайное число от 0 до количества
+    #дежурантов
+    l = np.random.randint(0,len(doc.getRealDejs()))
+
+    #получить случайного дежуранта с этим индексом
+    d = doc.getRealDejs().iloc[l] 
+    print(l,d) 
+
+
     return schedule
 
 
@@ -233,7 +262,7 @@ def main():
     doc  = DocSchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
 #    pdb.set_trace()
  
-    randomSolution = getInitShedule(doc,dt.datetime.now().month+1,dt.datetime.now().year)
+    randomSolution = getInitShedule(doc)
 
     print("Random Solution = ")
     print(randomSolution)
