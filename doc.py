@@ -250,7 +250,18 @@ def getInitShedule(doc):
 
     #получить случайного дежуранта с этим индексом
     d = doc.getRealDejs().iloc[l] 
-    print(l,d) 
+    print(l,d)
+
+    shift_schedule = doc.corps*doc.days_in_month
+
+
+    schedule[l*shift_schedule]=1
+    print(type(schedule[5:24]))
+
+    print(l,d)
+
+
+
 
 
     return schedule
