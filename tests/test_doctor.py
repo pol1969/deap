@@ -19,7 +19,7 @@ def test_random_solution(setup_docs):
     print()
     print("Len randomSolution = ", len(randomSolution))
  
-    setup_docs.printScheduleInfo(randomSolution)
+#    setup_docs.printScheduleInfo(randomSolution)
  
     print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
@@ -30,7 +30,7 @@ def test_getInitShedule(setup_docs):
     print()
 
     print("My Init Solution= ")
- #   print(myInitSolution)
+    print(myInitSolution)
     print("Len myInitSolution = ", len(myInitSolution))
  
     setup_docs.printScheduleInfo(myInitSolution)

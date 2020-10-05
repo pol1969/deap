@@ -19,6 +19,9 @@ class DocSchedulingProblem:
         
         self.docs = list(df_docs['FAM']+' '+ df_docs['NAME'])
         self.df = df_docs
+        self.df_dej = self.getRealDejs()
+        self.docs_dej = list(self.df_dej['FAM']+' '+ self.df_dej['NAME'])
+
        # doc' respective shift preferences - morning, evening, night:
         self.shiftPreference = [[1, 0, 0], [1, 1, 0], [0, 0, 1], [0, 1, 0], [0, 0, 1], [1, 1, 1], [0, 1, 1], [1, 1, 1]]
  
@@ -108,9 +111,9 @@ class DocSchedulingProblem:
 
         docShiftsDict = {}
         shiftIndex = 0
-#        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
  
-        for doc in self.docs:
+        for doc in self.docs_dej:
             docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerDoc]
             shiftIndex += shiftsPerDoc
  #       import pdb; pdb.set_trace()
@@ -189,7 +192,7 @@ class DocSchedulingProblem:
             # duplicate the shift-preference over the days of the period
             preference = shiftPreference * (self.shiftsPerWeek // self.shiftPerDay)
             # iterate over the shifts and compare to preferences:
-            shifts = docShiftsDict[self.docs[docIndex]]
+            shifts = docShiftsDict[self.docs_dej[docIndex]]
             for pref, shift in zip(preference, shifts):
                 if pref == 0 and shift == 1:
                     violations += 1
@@ -201,6 +204,7 @@ class DocSchedulingProblem:
         Prints the schedule and violations details
         :param schedule: a list of binary values describing the given schedule
         """
+#        pdb.set_trace()
         docShiftsDict = self.getDocShifts(schedule)
  
         print("Schedule for each doc:")
