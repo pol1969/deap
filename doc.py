@@ -229,7 +229,7 @@ class DocSchedulingProblem:
         print()
 
 def getInitShedule(doc):
-#1 Взять случайного дежуранта из списка
+#1 Взять случайного дежуранта из списка ✓
 #2 Рассчитать среднее количество дежурств на дежуранта
 #3 Генерировать максимально разбросанные даты дежурств
 #4 Проверить совпадения по уже поставленным с учетом корпусов, 	корпуса можно делить поровну
@@ -238,10 +238,12 @@ def getInitShedule(doc):
 #7 Проверить минимальное расстояние между дежурствами
  
 #    pdb.set_trace()
-    #количество дежурств в следующем месяце
+    #количество дежурств в следующем месяце,
+    #умноженное на количество дежурантов - 
     shifts = len(doc)
 
-    #генерировать массив нулей по количеству дежурств
+
+    #генерировать массив нулей
     schedule = np.zeros(shifts,dtype=np.int8)
     
     #генерировать случайное число от 0 до количества
@@ -252,6 +254,7 @@ def getInitShedule(doc):
     d = doc.getRealDejs().iloc[l] 
     print(l,d)
 
+    #сдвиг для получения профиля каждого дежуранта
     shift_schedule = doc.corps*doc.days_in_month
 
 
@@ -261,10 +264,21 @@ def getInitShedule(doc):
     print(l,d)
 
 
-
-
-
     return schedule
+
+
+def getFreeDejFromSchedule(schedule,days_in_month,nmb_corps):
+    #отдает в виде массива свободные дежурства
+
+    nmb_dej = int(len(schedule)/(days_in_month*nmb_corps))
+#    pdb.set_trace()
+
+    ar = schedule.reshape(nmb_dej, days_in_month*nmb_corps)
+    sum = ar.sum(axis=0)
+
+    return np.where(sum ==0)
+
+
 
 
  
