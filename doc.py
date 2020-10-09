@@ -229,17 +229,19 @@ class DocSchedulingProblem:
         print()
 
 def getInitShedule(doc):
-#1 Взять случайного дежуранта из списка ✓
-#2 Рассчитать среднее количество дежурств на дежуранта
-#3 Генерировать максимально разбросанные даты дежурств
-#4 Проверить совпадения по уже поставленным с учетом корпусов, 	корпуса можно делить поровну
-#5 Если есть совпадения, сдвинуть на один день
-#6 Повторить пункт 4
-#7 Проверить минимальное расстояние между дежурствами
+    """
+1 Взять случайного дежуранта из списка ✓
+2 Рассчитать среднее количество дежурств на дежуранта
+3 Генерировать максимально разбросанные даты дежурств
+4 Проверить совпадения по уже поставленным с учетом корпусов, 	корпуса можно делить поровну
+5 Если есть совпадения, сдвинуть на один день
+6 Повторить пункт 4
+7 Проверить минимальное расстояние между дежурствами
+    """
  
 #    pdb.set_trace()
     #количество дежурств в следующем месяце,
-    #умноженное на количество дежурантов - 
+    #умноженное на количество дежурантов -
     shifts = len(doc)
 
 
@@ -257,31 +259,110 @@ def getInitShedule(doc):
     #сдвиг для получения профиля каждого дежуранта
     shift_schedule = doc.corps*doc.days_in_month
 
+    print("before", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
+
 
     schedule[l*shift_schedule]=1
-    print(type(schedule[5:24]))
+
+    print("after", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
+
+
 
     print(l,d)
+    
 
 
     return schedule
 
 
 def getFreeDejFromSchedule(schedule,days_in_month,nmb_corps):
-    #отдает в виде массива свободные дежурства
+    """
+    отдает в виде массива свободные дежурства
+    :schedule расписание
+    :days_in_month дней в месяце
+    :nmb_corps количество корпусов
+    :return массив индексов свободных дежурств
+    """
 
+    #определяем число дежурантов
     nmb_dej = int(len(schedule)/(days_in_month*nmb_corps))
-#    pdb.set_trace()
 
+    #делаем из расписания двумерную матрицу
     ar = schedule.reshape(nmb_dej, days_in_month*nmb_corps)
+
+    #считаем сумму в столбцах
     sum = ar.sum(axis=0)
 
-    return np.where(sum ==0)
+    #возвращаем индексы дат,сумма дежурств в которых 
+    #равна нулю (свободные дежурства) с учетом корпусов
+    return np.where(sum==0)
+
+def isSuitableDej(schedule, doc, dej_index, day):
+    """
+    определяет, можно ли поставить день day в
+    расписание shedule
+    :shedule - расписание , двоичный массив длиной
+      дней_в_месяце*количество_корпусов*количество_дежурантов
+    :doc - объект DocSchedulingProblem
+    :dej_index индекс дежуранта в массиве дежурантов
+    :day индекс дня в одномерном массиве shedule
+    :return True , если подходит
+
+    """
+
+    if not isSuitableCorpus(schedule, doc,dej_index,day):
+        return False
+
+   
+    if not isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
+        return False
+
+
+    if not isSuitableSequence(schedule, doc, dej_index, day, corpus):
+        return False
+    
+    return True
+
+def isSuitableSequence(schedule, doc, dej_index, day, corpus):
+    return True
+
+def isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
+    return True
+
+def isSuitableCorpus(schedule, doc, dej_index, day):
+    return True
+
+def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
+    df = doc.getRealDejs()
+    nmb_dej_doc = len(doc.getRealDejs() )
+    days = doc.days_in_month
+    nmb_corps = doc.getCorps()
+    dej_doc = df.iloc[dej_index]
+
+    schedule = schedule.reshape(nmb_dej_doc, days*nmb_corps)
+
+    if day > days:
+        print("Неправильный номер дня ",day)
+        return
+
+    if corpus not in (1,2,3):
+        print("Неправильный номер корпуса ",corpus)
+        return
+
+    if flag not in (0,1):
+        print("Flag может принимать значения 0 и 1", flag)
+        return
+
+
+    schedule[dej_index][(corpus-1)*days + day - 1] = flag
+    print(dej_doc)
+
+    print(schedule[dej_index])
+    print(schedule.flatten())
+    return schedule.flatten()
 
 
 
-
- 
  
 # testing the class:
 def main():

@@ -62,4 +62,21 @@ def test_getFreeDejs():
     print(c)
     assert np.array_equal(ar1,c) 
 
-    
+def test_isSuitableCorpus(setup_docs):
+    df = setup_docs.getRealDejs()
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    """
+    print(len(schedule))
+    print(schedule)
+    print()
+    print(df.iloc[0]['FAM'])
+
+    print(df.iloc[0]['CORPUS'])
+    """
+
+def test_assignToDej(setup_docs):
+        
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,2,2,1,1)
+
+
