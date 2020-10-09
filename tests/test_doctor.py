@@ -77,6 +77,18 @@ def test_isSuitableCorpus(setup_docs):
 def test_assignToDej(setup_docs):
         
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,2,2,1,1)
+    assignToDej(schedule,setup_docs,5,5,4,1)
+
+
+def test_printScheduleHuman(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,4,1,1,1)
+    assignToDej(schedule,setup_docs,5,2,2,1)
+    assignToDej(schedule,setup_docs,8,3,3,1)
+    assignToDej(schedule,setup_docs,1,5,1,1)
+
+    printScheduleHuman(schedule, setup_docs)
+
+
 
 

@@ -39,6 +39,7 @@ class DocSchedulingProblem:
         self.days_in_month = cd.monthrange(year,month)[1]
  #       pdb.set_trace()
         self.corps = 3
+        self.month = month
         self.realDejs = self.getRealDejs()
         self.shiftPerDay = len(self.shiftMin)
         self.shiftsPerWeek = 7 * self.shiftPerDay
@@ -59,6 +60,8 @@ class DocSchedulingProblem:
 
     def getDaysInMonth(self):
         return self.days_in_month
+    def getMonth(self):
+        return self.month
 
 
 
@@ -259,16 +262,16 @@ def getInitShedule(doc):
     #сдвиг для получения профиля каждого дежуранта
     shift_schedule = doc.corps*doc.days_in_month
 
-    print("before", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
+ #   print("before", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
 
 
     schedule[l*shift_schedule]=1
 
-    print("after", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
+#    print("after", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
 
 
 
-    print(l,d)
+#    print(l,d)
     
 
 
@@ -333,16 +336,16 @@ def isSuitableCorpus(schedule, doc, dej_index, day):
     return True
 
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
-    df = doc.getRealDejs()
-    nmb_dej_doc = len(doc.getRealDejs() )
     days = doc.days_in_month
+    df = doc.getRealDejs()
     nmb_corps = doc.getCorps()
-    dej_doc = df.iloc[dej_index]
-
-    schedule = schedule.reshape(nmb_dej_doc, days*nmb_corps)
+    nmb_dej_doc = len(doc.getRealDejs() )
 
     if day > days:
         print("Неправильный номер дня ",day)
+        return
+    if dej_index > nmb_dej_doc:
+        print("Неправильный индекс дежуранта ", dej_index)
         return
 
     if corpus not in (1,2,3):
@@ -352,14 +355,38 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     if flag not in (0,1):
         print("Flag может принимать значения 0 и 1", flag)
         return
+    
+    dej_doc = df.iloc[dej_index]
+
+    schedule = schedule.reshape(nmb_dej_doc, days*nmb_corps)
+
 
 
     schedule[dej_index][(corpus-1)*days + day - 1] = flag
-    print(dej_doc)
+ #   print(dej_doc)
 
-    print(schedule[dej_index])
-    print(schedule.flatten())
+ #   print(schedule[dej_index])
     return schedule.flatten()
+
+def printScheduleHuman(schedule, doc):
+    print()
+    print("Расписание дежурств УЗ 'МООД'")
+    print("Месяц ",doc.getMonth())
+ #   print(doc.getRealDejs())
+    fam = doc.getRealDejs()['FAM']
+    i = doc.getRealDejs()['NAME']
+    o = doc.getRealDejs()['SURNAME']
+    dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
+    dejs = dejs.reshape((-1,1))
+    print(dejs.shape)
+    print(dejs)
+
+
+
+
+
+
+
 
 
 
