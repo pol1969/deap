@@ -378,8 +378,24 @@ def printScheduleHuman(schedule, doc):
     o = doc.getRealDejs()['SURNAME']
     dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
     dejs = dejs.reshape((-1,1))
-    print(dejs.shape)
-    print(dejs)
+ #   pdb.set_trace()
+ #   print(dejs.shape)
+ #   print(dejs)
+    schedule = schedule.reshape((len(dejs),
+        int(len(schedule)/len(dejs))))
+ #   print(schedule)
+    schedule = np.hstack((dejs,schedule))
+    print(schedule)
+    for i in schedule:
+        print(i[0],i[1],i[2],i[3])
+
+    hum = np.empty((doc.getDaysInMonth(),3),dtype='object')
+ #   print(hum)
+  #  pdb.set_trace() 
+    
+    hum[0][0]=schedule[0][0]
+    print(hum[0][0])
+
 
 
 
