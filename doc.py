@@ -340,10 +340,18 @@ def isSuitableCorpus(schedule, doc, dej_index, day):
     return True
 
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
-    days = doc.days_in_month
+    """
+    присваивает (flag=1) и удаляет (flag=0) дежурства 
+    дежурантам
+    :schedule ДНК
+    :doc объект DocSchedulingProblem
+    :dej_index индекс дежуранта в массиве и т д
+    :return плоская ДНК с изменениями
+    """
     df = doc.getRealDejs()
     nmb_corps = doc.getCorps()
     nmb_dej_doc = len(doc.getRealDejs() )
+    days = doc.getDaysInMonth()
 
     if day > days:
         print("Неправильный номер дня ",day)
@@ -364,73 +372,81 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
 
     schedule = schedule.reshape(nmb_dej_doc, days*nmb_corps)
 
-
-
     schedule[dej_index][(corpus-1)*days + day - 1] = flag
- #   print(dej_doc)
-
- #   print(schedule[dej_index])
+    
     return schedule.flatten()
 
 def printScheduleHuman(schedule, doc):
-    print()
-    print("Расписание дежурств УЗ 'МООД'")
-    print("Месяц ",doc.getMonth())
- #   print(doc.getRealDejs()
+    """
+    Выводит расписание в нужном конечном формате
+    :schedule ДНК расписания, двоичный 1d массив
+    :doc - объект DocSchedulingProblem
+    :return требуемая таблица
+    """
+
     corps = doc.getCorps()
     days = doc.getDaysInMonth()
     fam = doc.getRealDejs()['FAM']
+
+    # формируем столбик из дежурантов,
+    # попутно добавляем к фамилии И О
     i = doc.getRealDejs()['NAME']
     o = doc.getRealDejs()['SURNAME']
     dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
     dejs = dejs.reshape((-1,1))
- #   pdb.set_trace()
- #   print(dejs.shape)
- #   print(dejs)
+
+    # преобразуем ДНК в двумерный массив
     schedule = schedule.reshape((len(dejs),
         int(len(schedule)/len(dejs))))
- #   print(schedule)
+
+    # цепляем слева столбец с ФИО дежурантов
     schedule = np.hstack((dejs,schedule))
 
-    for i in schedule[:,0]:
-        i = f'{i:18}i'
-        print(i)
-
-
+    # можно сделать максимальный вывод таблицы без сокращений
     np.set_printoptions(threshold=sys.maxsize)
-#    print(schedule[0])
-  #  for i in schedule:
-   #     print(i[0],i[1],i[2],i[3])
 
+    # ищем в расписании единицы и получаем массивы координат
     is_one = np.where(schedule==1) 
-#    print(is_one)
 
+    # начинаем формировать конечную матрицу
+    # dtype object позволяет работать со строками
     hum = np.empty((days,3),dtype='object')
     
-    
+    # формируем массив дат для конечной таблицы
     dates = np.arange(np.datetime64(dt.date(doc.getYear(),
         doc.getMonth(),1)),days)
-
+    # преобразуем его в столбец
     dates = dates.reshape(-1,1)
 
+    # цепляем столбец с датами слева, попутно преобразуя
+    # его в строку
     schedule_with_date = np.hstack(((dates.astype('str')),
         hum))
 
- #   print(schedule_with_date)
-
- #   print(is_one)
-    
+    # nditer позволяет итерировать двумерный массив
+    # переносим данные в конечную таблицу,
+    # попутно заполняя текстовые поля пробеллами
+    # справа до 17
     for a in np.nditer(is_one):
-  #      print(a[0],a[1])
-  #      print(schedule[a[0]])
-  #      print(getDateFrom1d(a[1]-1,days,corps))
-
         schedule_with_date[getDateFrom1d(a[1]-1,
-            days,corps)][getNmbCorpusFrom1d(a[1],days,corps)] = schedule[a[0]][0].ljust(17)
-   #     print(schedule_with_date[getDateFrom1d(a[1]-1,days,corps)])
+            days,corps)][getNmbCorpusFrom1d(a[1],
+                days,corps)] = schedule[a[0]][0].ljust(17)
+   
+
+    print()
+    print("Расписание дежурств УЗ 'МООД'")
+    print("Месяц ",doc.getMonth())
     print(schedule_with_date)
 
+    return schedule_with_date
+
+
+
 def getNmbCorpusFrom1d(nmb,nmb_days_in_month,nmb_corps):
+    """
+    :return номер корпуса по числу из ДНК - schedule
+    """
+
     if nmb<=0 or nmb >nmb_days_in_month*nmb_corps:
         print("Неправильный номер дня")
         return 0 
@@ -444,7 +460,9 @@ def getNmbCorpusFrom1d(nmb,nmb_days_in_month,nmb_corps):
         return 2
 
 def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
-
+    """
+    :return номер дня  по числу из ДНК - schedule
+    """
     if nmb<0 or nmb >nmb_days_in_month*nmb_corps:
         print("Неправильный номер дня")
         return 0 
@@ -452,8 +470,6 @@ def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
         return nmb
     else:
         return nmb % nmb_days_in_month
-
-
 
 
 
