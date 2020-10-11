@@ -336,9 +336,16 @@ def isSuitableSequence(schedule, doc, dej_index, day, corpus):
 def isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
     return True
 
-def isSuitableCorpus(schedule, doc, dej_index, day):
-    return True
-
+def isSuitableCorpus(doc, dej_index, day):
+    
+    df = doc.getRealDejs()
+    #dej = df[dej_index]
+    dej_corp  = df.iloc[dej_index]['CORPUS']
+    days = doc.getDaysInMonth()
+    nmb_corps = doc.getCorps()
+    possible_corpus = getNmbCorpusFrom1d(day,days,nmb_corps)
+    return isCorpRight(dej_corp,possible_corpus) 
+    
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     """
     присваивает (flag=1) и удаляет (flag=0) дежурства 
@@ -355,18 +362,18 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
 
     if day > days:
         print("Неправильный номер дня ",day)
-        return
+        return 0
     if dej_index > nmb_dej_doc:
         print("Неправильный индекс дежуранта ", dej_index)
-        return
+        return 0
 
     if corpus not in (1,2,3):
         print("Неправильный номер корпуса ",corpus)
-        return
+        return 0
 
     if flag not in (0,1):
         print("Flag может принимать значения 0 и 1", flag)
-        return
+        return 0
     
     dej_doc = df.iloc[dej_index]
 
@@ -448,7 +455,8 @@ def getNmbCorpusFrom1d(nmb,nmb_days_in_month,nmb_corps):
     """
 
     if nmb<=0 or nmb >nmb_days_in_month*nmb_corps:
-        print("Неправильный номер дня")
+        print("Неправильный номер дня", nmb)
+ #       pdb.set_trace()
         return 0 
     if nmb <= nmb_days_in_month:
         return 1
@@ -464,12 +472,31 @@ def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
     :return номер дня  по числу из ДНК - schedule
     """
     if nmb<0 or nmb >nmb_days_in_month*nmb_corps:
-        print("Неправильный номер дня")
+        print("Неправильный номер дня", nmb)
         return 0 
     if nmb <= nmb_days_in_month:
         return nmb
     else:
         return nmb % nmb_days_in_month
+
+def isCorpRight(dej_corp,possible_corpus):
+    if dej_corp==1 and possible_corpus==3:
+        return True
+    if dej_corp==10 and possible_corpus==2:
+        return True
+    if dej_corp==100 and possible_corpus==1:
+        return True
+    if dej_corp==11 and possible_corpus in (2,3):
+        return True
+    if dej_corp==101 and possible_corpus in (1,3):
+        return True
+    if dej_corp==110 and possible_corpus in (1,2):
+        return True
+    if dej_corp==111 and possible_corpus in (1,2,3):
+        return True
+
+    return False    
+
 
 
 
