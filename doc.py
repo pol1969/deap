@@ -3,7 +3,7 @@ import pandas as pd
 import calendar as cd
 import datetime as dt
 import pdb
- 
+import sys 
  
 class DocSchedulingProblem:
     """This class encapsulates the Nurse Scheduling problem
@@ -40,6 +40,7 @@ class DocSchedulingProblem:
  #       pdb.set_trace()
         self.corps = 3
         self.month = month
+        self.year = year
         self.realDejs = self.getRealDejs()
         self.shiftPerDay = len(self.shiftMin)
         self.shiftsPerWeek = 7 * self.shiftPerDay
@@ -62,6 +63,9 @@ class DocSchedulingProblem:
         return self.days_in_month
     def getMonth(self):
         return self.month
+
+    def getYear(self):
+        return self.year
 
 
 
@@ -372,7 +376,9 @@ def printScheduleHuman(schedule, doc):
     print()
     print("Расписание дежурств УЗ 'МООД'")
     print("Месяц ",doc.getMonth())
- #   print(doc.getRealDejs())
+ #   print(doc.getRealDejs()
+    corps = doc.getCorps()
+    days = doc.getDaysInMonth()
     fam = doc.getRealDejs()['FAM']
     i = doc.getRealDejs()['NAME']
     o = doc.getRealDejs()['SURNAME']
@@ -385,28 +391,72 @@ def printScheduleHuman(schedule, doc):
         int(len(schedule)/len(dejs))))
  #   print(schedule)
     schedule = np.hstack((dejs,schedule))
-    print(schedule)
-    for i in schedule:
-        print(i[0],i[1],i[2],i[3])
 
-    hum = np.empty((doc.getDaysInMonth(),3),dtype='object')
- #   print(hum)
-  #  pdb.set_trace() 
+    for i in schedule[:,0]:
+        i = f'{i:18}i'
+        print(i)
+
+
+    np.set_printoptions(threshold=sys.maxsize)
+#    print(schedule[0])
+  #  for i in schedule:
+   #     print(i[0],i[1],i[2],i[3])
+
+    is_one = np.where(schedule==1) 
+#    print(is_one)
+
+    hum = np.empty((days,3),dtype='object')
     
-    hum[0][0]=schedule[0][0]
-    print(hum[0][0])
+    
+    dates = np.arange(np.datetime64(dt.date(doc.getYear(),
+        doc.getMonth(),1)),days)
+
+    dates = dates.reshape(-1,1)
+
+    schedule_with_date = np.hstack(((dates.astype('str')),
+        hum))
+
+ #   print(schedule_with_date)
+
+ #   print(is_one)
+    
+    for a in np.nditer(is_one):
+  #      print(a[0],a[1])
+  #      print(schedule[a[0]])
+  #      print(getDateFrom1d(a[1]-1,days,corps))
+
+        schedule_with_date[getDateFrom1d(a[1]-1,
+            days,corps)][getNmbCorpusFrom1d(a[1],days,corps)] = schedule[a[0]][0].ljust(17)
+   #     print(schedule_with_date[getDateFrom1d(a[1]-1,days,corps)])
+    print(schedule_with_date)
+
+def getNmbCorpusFrom1d(nmb,nmb_days_in_month,nmb_corps):
+    if nmb<=0 or nmb >nmb_days_in_month*nmb_corps:
+        print("Неправильный номер дня")
+        return 0 
+    if nmb <= nmb_days_in_month:
+        return 1
+
+    if nmb > nmb_days_in_month*2:
+        return 3
+
+    else:
+        return 2
+
+def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
+
+    if nmb<0 or nmb >nmb_days_in_month*nmb_corps:
+        print("Неправильный номер дня")
+        return 0 
+    if nmb <= nmb_days_in_month:
+        return nmb
+    else:
+        return nmb % nmb_days_in_month
 
 
 
 
 
-
-
-
-
-
-
- 
 # testing the class:
 def main():
     # create a problem instance:
