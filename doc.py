@@ -317,7 +317,7 @@ def isSuitableDej(schedule, doc, dej_index, day):
 
     """
 
-    if not isSuitableCorpus(schedule, doc,dej_index,day):
+    if not isSuitableCorpus(doc,dej_index,day):
         return False
 
    
@@ -331,9 +331,31 @@ def isSuitableDej(schedule, doc, dej_index, day):
     return True
 
 def isSuitableSequence(schedule, doc, dej_index, day, corpus):
-    return True
+
+    dejs = doc.getRealDejs()
+    days = doc.getDaysInMonth()
+    corps = doc.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+    schedule_doc = schedule[0]
+    dej_doc = dejs.iloc[0]
+    print(dej_doc)
+    print(schedule_doc)
+    schedule_doc = schedule_doc.reshape(corps,days)
+    print(schedule_doc)
+    schedule_doc = schedule_doc.sum(axis=0)
+    print(schedule_doc)
+
+    sched_1_ind = np.where(schedule_doc==1)
+    print(sched_1_ind)
+
+
+
+    return False
 
 def isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
+    print(schedule)
     return True
 
 def isSuitableCorpus(doc, dej_index, day):
@@ -495,7 +517,49 @@ def isCorpRight(dej_corp,possible_corpus):
     if dej_corp==111 and possible_corpus in (1,2,3):
         return True
 
-    return False    
+    return False   
+
+def getAppointedDej(doc,dej_index):
+    """
+    получить массив назначенных дежурств
+    """
+
+    return 0
+
+def getAmbitOne(schedule,days,nmb_neighb,dej_before):
+    """
+    получить двоичный массив с окрестностями
+    :schedule исходный двоичный массив
+    :nmb_neighb число соседей с одной стороны,
+        определяет размеры окрестности
+    :dej_before BOOL было ли дежурство в последний день
+        предыдущего месяца
+    :return требуемый массив
+    """
+
+    x = len(schedule)
+    rows  = int(x/days)
+
+    schedule = schedule.reshape(rows, days)
+    print(schedule)
+    sum_schedule = np.sum(schedule,axis=0)
+    print(sum_schedule)
+
+    ind = np.where(sum_schedule==1)
+    un = np.array([],dtype='int16')
+
+    print(ind)
+    for i in ind[0]:
+ #       pdb.set_trace()
+        print(i)
+        p = np.arange(i-nmb_neighb,i+nmb_neighb + 1)
+        print(p)
+        un = np.append(un,p)
+        print(un)
+
+
+
+    return 
 
 
 

@@ -127,6 +127,43 @@ def test_isCorpRight():
     assert 0  == isCorpRight(100,2)
 
  
+def test_isSuitableSequence(setup_docs):
 
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,10,1,1)
+    assignToDej(schedule,setup_docs,0,15,2,1)
+    
+#    printScheduleHuman(schedule, setup_docs)
+
+    r = isSuitableSequence(schedule, setup_docs,0,6,1)
+
+
+def test_getAppointedDej(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,10,1,1)
+    assignToDej(schedule,setup_docs,0,15,2,1)
+
+    isSuitableSequence(schedule, setup_docs, 0, 1, 1)
+
+ 
+def test_getAmbitOne(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,2,1,1)
+    assignToDej(schedule,setup_docs,0,10,1,1)
+    assignToDej(schedule,setup_docs,0,30,2,1)
+
+    dejs = setup_docs.getRealDejs()
+    days = setup_docs.getDaysInMonth()
+    corps = setup_docs.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+    schedule_doc = schedule[0]
+    dej_doc = dejs.iloc[0]
+    print(dej_doc)
+    print(schedule_doc)
+    neighb = getAmbitOne(schedule_doc,days,2,0)
 
 
