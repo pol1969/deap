@@ -351,9 +351,22 @@ def isSuitableSequence(schedule, doc, dej_index, day, corpus):
 
     return True
 
-def isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
-    print(schedule)
-    return True
+def isSuitableQuantity(schedule, doc, dej_index, max_nmb_dej):
+ #   pdb.set_trace()
+    dejs = doc.getRealDejs()
+    days = doc.getDaysInMonth() 
+    corps = doc.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+    schedule_doc = schedule[dej_index]
+ #   dej_doc = dejs.iloc[dej_index]
+    sum = np.sum(schedule_doc)
+
+    if sum < max_nmb_dej:
+        return True
+
+    return False
 
 def isSuitableCorpus(doc, dej_index, day):
     

@@ -72,14 +72,11 @@ def test_isSuitableCorpus(setup_docs):
         dej_doc = dejs.iloc[i]
         d =  np.random.randint(1,nmb_max+1)
  
-#        print(dej_doc[0].ljust(13),dej_doc[4],d,
-#                isSuitableCorpus(setup_docs,i,d))
             
 
 def test_assignToDej(setup_docs):
         
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-#    assert 0 == assignToDej(schedule,setup_docs,5,5,4,1)
 
 
 def test_getNmbCorpusFrom1d():
@@ -89,7 +86,6 @@ def test_getNmbCorpusFrom1d():
     assert 1 == getNmbCorpusFrom1d(20,nmb_days,nmb_corps)
     assert 2 == getNmbCorpusFrom1d(40,nmb_days,nmb_corps)
     assert 3 == getNmbCorpusFrom1d(70,nmb_days,nmb_corps)
- #   assert 0 == getNmbCorpusFrom1d(100,nmb_days,nmb_corps)
 
 def test_getDayFrom1d():
     nmb_days = 30
@@ -171,4 +167,22 @@ def test_getAmbitOne(setup_docs):
 #    print(schedule_doc)
     neighb = getAmbitOne(schedule_doc,days,2)
 
+def test_isSuitableQuantity(setup_docs):
+
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,10,1,1)
+    assignToDej(schedule,setup_docs,0,15,1,1)
+    assignToDej(schedule,setup_docs,0,20,1,1)
+
+    assert False == isSuitableQuantity(schedule,setup_docs,0,4)
+
+
+def test_isSuitableQuantity(setup_docs):
+
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+
+    assert True == isSuitableQuantity(schedule,setup_docs,0,4)
 
