@@ -150,9 +150,9 @@ def test_getAppointedDej(setup_docs):
  
 def test_getAmbitOne(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,0,2,1,1)
-    assignToDej(schedule,setup_docs,0,10,1,1)
-    assignToDej(schedule,setup_docs,0,30,2,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,9,1,1)
+    assignToDej(schedule,setup_docs,0,25,2,1)
 
     dejs = setup_docs.getRealDejs()
     days = setup_docs.getDaysInMonth()
@@ -162,8 +162,8 @@ def test_getAmbitOne(setup_docs):
     schedule = schedule.reshape(num_rows,nmb_max)
     schedule_doc = schedule[0]
     dej_doc = dejs.iloc[0]
-    print(dej_doc)
-    print(schedule_doc)
-    neighb = getAmbitOne(schedule_doc,days,2,0)
+#    print(dej_doc)
+#    print(schedule_doc)
+    neighb = getAmbitOne(schedule_doc,days,2)
 
 

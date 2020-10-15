@@ -526,40 +526,57 @@ def getAppointedDej(doc,dej_index):
 
     return 0
 
-def getAmbitOne(schedule,days,nmb_neighb,dej_before):
+def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
     """
-    получить двоичный массив с окрестностями
+    получить двоичный массив единиц дежурств с окрестностями
     :schedule исходный двоичный массив
+    :дней в месяце
     :nmb_neighb число соседей с одной стороны,
         определяет размеры окрестности
     :dej_before BOOL было ли дежурство в последний день
         предыдущего месяца
     :return требуемый массив
     """
-
+    
     x = len(schedule)
+    #количество корпусов
+ 
     rows  = int(x/days)
-
+    #выстраиваем корпуса в столбик
+ 
     schedule = schedule.reshape(rows, days)
-    print(schedule)
-    sum_schedule = np.sum(schedule,axis=0)
-    print(sum_schedule)
 
+    #суммируем единицы по столбцам и получаем дни дежурств
+    sum_schedule = np.sum(schedule,axis=0)
+#    print('In gAO sum_schedule:',sum_schedule)
+    
+    #получаем индексы дней дежурств
     ind = np.where(sum_schedule==1)
     un = np.array([],dtype='int16')
-
-    print(ind)
+ #   print('Индексы единиц: ',ind)
+    
+    #получаем укaзатели соседних дней, когда нельзя
+    #ставить дежурства 
     for i in ind[0]:
- #       pdb.set_trace()
-        print(i)
         p = np.arange(i-nmb_neighb,i+nmb_neighb + 1)
-        print(p)
         un = np.append(un,p)
-        print(un)
+#    print('Индексы единиц с соседями: ',un)
+   
+   #убираем повторы и отсекаем края
+    ret = (x for x in np.unique(un) if x>=0 and x <days)
+    ret = np.fromiter(ret, int)
+#    print('Индексы без повторов и краев: ',ret)
+#    pdb.set_trace()
+   
+    if dej_before==1:
+        ret = np.insert(ret,0,0)
+
+ #   print('Индексы с первым днем: ',ret) 
 
 
+#    print('In getAmbientOne',ret)
 
-    return 
+    return ret
 
 
 
