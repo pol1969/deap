@@ -72,8 +72,8 @@ def test_isSuitableCorpus(setup_docs):
         dej_doc = dejs.iloc[i]
         d =  np.random.randint(1,nmb_max+1)
  
-        print(dej_doc[0].ljust(13),dej_doc[4],d,
-                isSuitableCorpus(setup_docs,i,d))
+#        print(dej_doc[0].ljust(13),dej_doc[4],d,
+#                isSuitableCorpus(setup_docs,i,d))
             
 
 def test_assignToDej(setup_docs):
@@ -136,7 +136,12 @@ def test_isSuitableSequence(setup_docs):
     
 #    printScheduleHuman(schedule, setup_docs)
 
-    r = isSuitableSequence(schedule, setup_docs,0,6,1)
+    assert False == isSuitableSequence(schedule, setup_docs,0,6,1)
+    assert True == isSuitableSequence(schedule, setup_docs,0,1,1)
+    assert False == isSuitableSequence(schedule, setup_docs,0,16,1)
+    assert True == isSuitableSequence(schedule, setup_docs,0,30,1)
+    assert False == isSuitableSequence(schedule, setup_docs,0,9,1)
+    assert False == isSuitableSequence(schedule, setup_docs,0,31,1)
 
 
 def test_getAppointedDej(setup_docs):

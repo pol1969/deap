@@ -338,21 +338,18 @@ def isSuitableSequence(schedule, doc, dej_index, day, corpus):
     nmb_max = days*corps
     num_rows, num_cols  = dejs.shape
     schedule = schedule.reshape(num_rows,nmb_max)
-    schedule_doc = schedule[0]
-    dej_doc = dejs.iloc[0]
-    print(dej_doc)
-    print(schedule_doc)
-    schedule_doc = schedule_doc.reshape(corps,days)
-    print(schedule_doc)
-    schedule_doc = schedule_doc.sum(axis=0)
-    print(schedule_doc)
+    schedule_doc = schedule[dej_index]
+    dej_doc = dejs.iloc[dej_index]
 
-    sched_1_ind = np.where(schedule_doc==1)
-    print(sched_1_ind)
+    days_busy = getAmbitOne(schedule_doc,days,2)
+    days_busy = (x+1 for x in days_busy)
 
+    if day in days_busy:
+        return False
+    if day > days:
+        return False
 
-
-    return False
+    return True
 
 def isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
     print(schedule)
@@ -361,7 +358,6 @@ def isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
 def isSuitableCorpus(doc, dej_index, day):
     
     df = doc.getRealDejs()
-    #dej = df[dej_index]
     dej_corp  = df.iloc[dej_index]['CORPUS']
     days = doc.getDaysInMonth()
     nmb_corps = doc.getCorps()
@@ -537,7 +533,7 @@ def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
         предыдущего месяца
     :return требуемый массив
     """
-    
+#    pdb.set_trace()    
     x = len(schedule)
     #количество корпусов
  
