@@ -6,7 +6,7 @@ import pdb
 import sys 
  
 class DocSchedulingProblem:
-    """This class encapsulates the Nurse Scheduling problem
+    """This class encapsulates the Nurse Schedulizong problem
     """
  
     def __init__(self, hardConstraintPenalty,df_docs,month,year):
@@ -58,6 +58,9 @@ class DocSchedulingProblem:
     def getRealDejs(self):
         d = self.df.query('CORPUS!=2 and CORPUS!=0')
         return d
+    def getNmbRealDejs(self):
+        d = self.getRealDejs()
+        return d.shape[0]
 
     def getDaysInMonth(self):
         return self.days_in_month
@@ -254,32 +257,52 @@ def getInitShedule(doc):
 
     #генерировать массив нулей
     schedule = np.zeros(shifts,dtype=np.int8)
-    
-    #генерировать случайное число от 0 до количества
-    #дежурантов
-    l = np.random.randint(0,len(doc.getRealDejs()))
-
-    #получить случайного дежуранта с этим индексом
-    d = doc.getRealDejs().iloc[l] 
-    print(l,d)
-
-    #сдвиг для получения профиля каждого дежуранта
-    shift_schedule = doc.corps*doc.days_in_month
-
- #   print("before", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
-
-
-    schedule[l*shift_schedule]=1
-
-#    print("after", getFreeDejFromSchedule(schedule,doc.days_in_month,doc.corps))
-
-
-
-#    print(l,d)
+    nmb_corps = doc.getCorps()
+    days = doc.getDaysInMonth()
+    nmb_dejs = len(doc.getRealDejs())
+    cnt=0
     
 
+    while not isScheduleFull(schedule,doc):
+        l = np.random.randint(0,nmb_dejs)
+        day = np.random.randint(1,days*nmb_corps)
+        day_real = convDayToDayAndCorp(day,days)[0]
+        corp_real = convDayToDayAndCorp(day,days)[1]
+        cnt+=1
+        print(cnt,l,day,corp_real)
 
-    return schedule
+
+        if isSuitableDej(schedule, doc,l,day):
+            print(cnt)
+            assignToDej(schedule,doc,l,day_real,corp_real)
+            printScheduleHuman(schedule,doc)
+
+
+        if cnt >1000:
+            return
+
+    printScheduleHuman(schedule,doc)
+
+
+
+def isScheduleFull(schedule,doc):
+    len_sched = len(schedule)
+    dejs = doc.getRealDejs()
+    days = doc.getDaysInMonth()
+    corps = doc.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+#    pdb.set_trace()
+    sum = np.sum(schedule, axis=0)
+    sum =np.sum(sum)
+    if sum >= len_sched:
+        return True
+
+    return False
+  
+
+
 
 
 def getFreeDejFromSchedule(schedule,days_in_month,nmb_corps):
@@ -316,21 +339,24 @@ def isSuitableDej(schedule, doc, dej_index, day):
     :return True , если подходит
 
     """
+    corpus = convDayToDayAndCorp(day,doc.getDaysInMonth())[1]  
+    max_nmb_dej = doc.getNmbRealDejs() 
 
     if not isSuitableCorpus(doc,dej_index,day):
         return False
 
    
-    if not isSuitableQuantity(schedule, doc, dej_index, day, corpus,max_nmb_dej):
+    if not isSuitableQuantity(schedule,doc,dej_index,max_nmb_dej):
         return False
 
 
-    if not isSuitableSequence(schedule, doc, dej_index, day, corpus):
+    if not isSuitableSequence(schedule, doc, dej_index, day):
         return False
     
     return True
 
-def isSuitableSequence(schedule, doc, dej_index, day, corpus):
+
+def isSuitableSequence(schedule, doc, dej_index, day):
 
     dejs = doc.getRealDejs()
     days = doc.getDaysInMonth()
@@ -350,6 +376,7 @@ def isSuitableSequence(schedule, doc, dej_index, day, corpus):
         return False
 
     return True
+
 
 def isSuitableQuantity(schedule, doc, dej_index, max_nmb_dej):
  #   pdb.set_trace()
@@ -528,13 +555,6 @@ def isCorpRight(dej_corp,possible_corpus):
 
     return False   
 
-def getAppointedDej(doc,dej_index):
-    """
-    получить массив назначенных дежурств
-    """
-
-    return 0
-
 def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
     """
     получить двоичный массив единиц дежурств с окрестностями
@@ -586,6 +606,18 @@ def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
 #    print('In getAmbientOne',ret)
 
     return ret
+
+def convDayToDayAndCorp(day,days):
+    """
+    определяет по индексу в schedule день и корпус
+    """
+    mod = day//days
+    div = day%days
+
+    if div==0:
+        return (days,mod)
+    else:
+        return (div,mod+1)
 
 
 

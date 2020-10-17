@@ -14,14 +14,14 @@ def test_all(setup_docs):
 def test_random_solution(setup_docs):
     randomSolution = np.random.randint(2, size=len(setup_docs))
  #   pdb.set_trace()
-    print("Random Solution = ")
+#    print("Random Solution = ")
  #   print(randomSolution)
-    print()
-    print("Len randomSolution = ", len(randomSolution))
+#    print()
+ #   print("Len randomSolution = ", len(randomSolution))
  
 #    setup_docs.printScheduleInfo(randomSolution)
  
-    print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
+ #   print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
 
 
@@ -29,13 +29,14 @@ def test_getInitShedule(setup_docs):
     myInitSolution = getInitShedule(setup_docs)
     print()
 
-    print("My Init Solution= ")
+#    print("My Init Solution= ")
 #    print(myInitSolution)
-    print("Len myInitSolution = ", len(myInitSolution))
+ #   print("Len myInitSolution = ", len(myInitSolution))
  
 #    setup_docs.printScheduleInfo(myInitSolution)
  
-    print("Total Cost myInitSolution = ", setup_docs.getCost(myInitSolution))
+#    print("Total Cost myInitSolution = ", setup_docs.getCost(myInitSolution))
+
  
 def test_getRealDejs(setup_docs):
     assert len(setup_docs.getDfDocs())>len(setup_docs.getRealDejs())
@@ -54,12 +55,12 @@ def test_getFreeDejs():
     ar1 = getFreeDejFromSchedule(ar,days_in_month,nmb_corps)
 
 
-    print(ar1)
+ #   print(ar1)
 
     c = np.array([1,0,0,1,1])
 
     c = np.where(c==0)
-    print(c)
+#    print(c)
     assert np.array_equal(ar1,c) 
 
 def test_isSuitableCorpus(setup_docs):
@@ -132,21 +133,16 @@ def test_isSuitableSequence(setup_docs):
     
 #    printScheduleHuman(schedule, setup_docs)
 
-    assert False == isSuitableSequence(schedule, setup_docs,0,6,1)
-    assert True == isSuitableSequence(schedule, setup_docs,0,1,1)
-    assert False == isSuitableSequence(schedule, setup_docs,0,16,1)
-    assert True == isSuitableSequence(schedule, setup_docs,0,30,1)
-    assert False == isSuitableSequence(schedule, setup_docs,0,9,1)
-    assert False == isSuitableSequence(schedule, setup_docs,0,31,1)
+    assert False == isSuitableSequence(schedule, setup_docs,0,6)
+    assert True == isSuitableSequence(schedule, setup_docs,0,1)
+    assert False == isSuitableSequence(schedule, setup_docs,0,16)
+    assert True == isSuitableSequence(schedule, setup_docs,0,30)
+    assert False == isSuitableSequence(schedule, setup_docs,0,9)
+    assert False == isSuitableSequence(schedule, setup_docs,0,31)
 
 
-def test_getAppointedDej(setup_docs):
-    schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,0,5,1,1)
-    assignToDej(schedule,setup_docs,0,10,1,1)
-    assignToDej(schedule,setup_docs,0,15,2,1)
 
-    isSuitableSequence(schedule, setup_docs, 0, 1, 1)
+    isSuitableSequence(schedule, setup_docs, 0, 1)
 
  
 def test_getAmbitOne(setup_docs):
@@ -167,7 +163,7 @@ def test_getAmbitOne(setup_docs):
 #    print(schedule_doc)
     neighb = getAmbitOne(schedule_doc,days,2)
 
-def test_isSuitableQuantity(setup_docs):
+def test_isSuitableQuantity_is_more_then_4(setup_docs):
 
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
@@ -179,6 +175,7 @@ def test_isSuitableQuantity(setup_docs):
     assert False == isSuitableQuantity(schedule,setup_docs,0,4)
 
 
+
 def test_isSuitableQuantity(setup_docs):
 
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
@@ -186,3 +183,29 @@ def test_isSuitableQuantity(setup_docs):
 
     assert True == isSuitableQuantity(schedule,setup_docs,0,4)
 
+def test_isScheduleFull_empty(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assert False == isScheduleFull(schedule,setup_docs)
+
+
+def test_isScheduleFull_full(setup_docs):
+    schedule = np.ones(len(setup_docs),dtype=np.int8)
+    assert True == isScheduleFull(schedule,setup_docs)
+
+
+def test_isScheduleFull_not_full(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,10,1,1)
+    assignToDej(schedule,setup_docs,0,15,1,1)
+    assignToDej(schedule,setup_docs,0,20,1,1)
+#    pdb.set_trace()
+    assert False == isScheduleFull(schedule,setup_docs)
+
+@pytest.mark.skip()
+def test_convDayToDayAndCorp():
+    days = 29 
+    t = range(0,88)
+    for i in t:
+        print(i, convDayToDayAndCorp(i,days))
