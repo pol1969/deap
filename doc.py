@@ -60,6 +60,7 @@ class DocSchedulingProblem:
         return d
     def getNmbRealDejs(self):
         d = self.getRealDejs()
+ #       pdb.set_trace()
         return d.shape[0]
 
     def getDaysInMonth(self):
@@ -259,7 +260,10 @@ def getInitShedule(doc):
     schedule = np.zeros(shifts,dtype=np.int8)
     nmb_corps = doc.getCorps()
     days = doc.getDaysInMonth()
-    nmb_dejs = len(doc.getRealDejs())
+#    nmb_dejs = len(doc.getRealDejs())
+    dejs = doc.getRealDejs()
+#    pdb.set_trace()
+    nmb_dejs = doc.getRealDejs().shape[0]
     cnt=0
     
 
@@ -269,16 +273,24 @@ def getInitShedule(doc):
         day_real = convDayToDayAndCorp(day,days)[0]
         corp_real = convDayToDayAndCorp(day,days)[1]
         cnt+=1
-        print(cnt,l,day,corp_real)
+
+        dej_doc = dejs.iloc[l]
+ #       pdb.set_trace()
+ #       print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,corp_real)
 
 
         if isSuitableDej(schedule, doc,l,day):
-            print(cnt)
+ #           print(cnt)
+            print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,
+                    corp_real)
             assignToDej(schedule,doc,l,day_real,corp_real)
             printScheduleHuman(schedule,doc)
 
 
         if cnt >1000:
+            printScheduleHuman(schedule,doc)
+            printScheduleHumanSum(schedule,doc)
+
             return
 
     printScheduleHuman(schedule,doc)
@@ -296,6 +308,7 @@ def isScheduleFull(schedule,doc):
 #    pdb.set_trace()
     sum = np.sum(schedule, axis=0)
     sum =np.sum(sum)
+#    print('Свободные смены',len_sched-sum)
     if sum >= len_sched:
         return True
 
@@ -339,20 +352,34 @@ def isSuitableDej(schedule, doc, dej_index, day):
     :return True , если подходит
 
     """
-    corpus = convDayToDayAndCorp(day,doc.getDaysInMonth())[1]  
-    max_nmb_dej = doc.getNmbRealDejs() 
+#    pdb.set_trace()
+    conv_day,corpus = convDayToDayAndCorp(day,doc.getDaysInMonth())
+    max_nmb_dej = doc.getNmbRealDejs()
+    dejs = doc.getRealDejs()
+#    pdb.set_trace()
+#    doc_dej = dejs[dej_index]
+#    print(doc_dej
+    
+    if not isFreeDay(schedule,day):
+        return False
+    
+
 
     if not isSuitableCorpus(doc,dej_index,day):
+ #       print("Не походит корпус")
         return False
 
    
-    if not isSuitableQuantity(schedule,doc,dej_index,max_nmb_dej):
+    if not isSuitableQuantity(schedule,doc,dej_index,
+            max_nmb_dej):
+#        print("Не походит количество")
         return False
 
 
-    if not isSuitableSequence(schedule, doc, dej_index, day):
+    if not isSuitableSequence(schedule, doc, dej_index, conv_day):
+  #      print("Не походит последовательность")
         return False
-    
+
     return True
 
 
@@ -403,6 +430,9 @@ def isSuitableCorpus(doc, dej_index, day):
     nmb_corps = doc.getCorps()
     possible_corpus = getNmbCorpusFrom1d(day,days,nmb_corps)
     return isCorpRight(dej_corp,possible_corpus) 
+
+def isFreeDay(schedule,day):
+    return True
     
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     """
@@ -432,6 +462,8 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     if flag not in (0,1):
         print("Flag может принимать значения 0 и 1", flag)
         return 0
+
+#    pdb.set_trace()
     
     dej_doc = df.iloc[dej_index]
 
@@ -471,6 +503,7 @@ def printScheduleHuman(schedule, doc):
     np.set_printoptions(threshold=sys.maxsize)
 
     # ищем в расписании единицы и получаем массивы координат
+    #pdb.set_trace()
     is_one = np.where(schedule==1) 
 
     # начинаем формировать конечную матрицу
@@ -491,19 +524,74 @@ def printScheduleHuman(schedule, doc):
     # nditer позволяет итерировать двумерный массив
     # переносим данные в конечную таблицу,
     # попутно заполняя текстовые поля пробеллами
-    # справа до 17
+    # справа до 12
+#    pdb.set_trace()
     for a in np.nditer(is_one):
-        schedule_with_date[getDateFrom1d(a[1]-1,
-            days,corps)][getNmbCorpusFrom1d(a[1],
-                days,corps)] = schedule[a[0]][0].ljust(17)
+#        print()
+ #       print('a',a)
+        ind_data = getDateFrom1d(a[1]-1,days,corps)
+        #ограничение на выход за верхнюю границу массива
+#        if ind_data == days:
+ #           return
+
+        ind_corpus = getNmbCorpusFrom1d(a[1],days,corps)
+  #      print('ind_data',ind_data)
+   #     print('ind_corpus',ind_corpus)
+    #    print('schedule_with_date shape',
+     #           schedule_with_date.shape)
+      #  print('is_one',is_one)
+
+      #  print('schedule_with_date[ind_data][ind_corpus]',
+       #         schedule_with_date[ind_data][ind_corpus]  )
+        if ind_data < days:
+            schedule_with_date[ind_data][ind_corpus] = schedule[a[0]][0].ljust(12)
    
 
     print()
     print("Расписание дежурств УЗ 'МООД'")
     print("Месяц ",doc.getMonth())
     print(schedule_with_date)
+    print('Свободных смен - ',np.sum(pd.isnull(schedule_with_date)))
 
+#    pdb.set_trace()
     return schedule_with_date
+
+def printScheduleHumanSum(schedule, doc):
+    """
+    Выводит расписание в нужном конечном формате
+    :schedule ДНК расписания, двоичный 1d массив
+    :doc - объект DocSchedulingProblem
+    :return требуемая таблица
+    """
+
+    corps = doc.getCorps()
+    days = doc.getDaysInMonth()
+    fam = doc.getRealDejs()['FAM']
+
+    # формируем столбик из дежурантов,
+    # попутно добавляем к фамилии И О
+    i = doc.getRealDejs()['NAME']
+    o = doc.getRealDejs()['SURNAME']
+    dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
+    dejs = dejs.reshape((-1,1))
+
+    # преобразуем ДНК в двумерный массив
+    schedule2d = schedule.reshape((len(dejs),
+        int(len(schedule)/len(dejs))))
+ #   pdb.set_trace()
+    schedule_2d_sum = np.sum(schedule2d,axis=1)
+    schedule_2d_sum = schedule_2d_sum.reshape((-1,1))
+ #   pdb.set_trace()
+
+    # цепляем слева столбец с ФИО дежурантов
+    schedule_2d_sum_with_dejs = np.hstack((dejs,
+        schedule_2d_sum))
+
+    # можно сделать максимальный вывод таблицы без сокращений
+    np.set_printoptions(threshold=sys.maxsize)
+    print(schedule_2d_sum_with_dejs)
+
+#    pdb.set_trace()
 
 
 

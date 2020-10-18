@@ -3,6 +3,7 @@ from doc import *
 import numpy as np
 import datetime as dt 
 import pdb
+import time
 
        
 
@@ -24,10 +25,12 @@ def test_random_solution(setup_docs):
  #   print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
 
-
+@pytest.mark.skip()
 def test_getInitShedule(setup_docs):
+    start_time = time.time()
+    print(time.time())
     myInitSolution = getInitShedule(setup_docs)
-    print()
+    print('Время выполнения,сек - ', time.time()-start_time)
 
 #    print("My Init Solution= ")
 #    print(myInitSolution)
@@ -69,15 +72,17 @@ def test_isSuitableCorpus(setup_docs):
     corps = setup_docs.getCorps()
     nmb_max = days*corps
     num_rows, num_cols  = dejs.shape
+ #   print(dejs)
     for i in np.arange(num_rows):
         dej_doc = dejs.iloc[i]
         d =  np.random.randint(1,nmb_max+1)
- 
+  #      print(dej_doc['FAM'],d,isSuitableCorpus(setup_docs,i,d)) 
             
 
 def test_assignToDej(setup_docs):
         
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
+
 
 
 def test_getNmbCorpusFrom1d():
@@ -95,6 +100,7 @@ def test_getDayFrom1d():
     assert 2  == getDateFrom1d(32,nmb_days,nmb_corps)
 #    assert 0 == getDateFrom1d(100,nmb_days,nmb_corps)
     assert 10 == getDateFrom1d(70,nmb_days,nmb_corps)
+    assert 30 == getDateFrom1d(30,nmb_days,nmb_corps)
 
 
 
@@ -102,13 +108,12 @@ def test_getDayFrom1d():
 @pytest.mark.skip()
 def test_printScheduleHuman(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,4,1,1,1)
-    assignToDej(schedule,setup_docs,5,2,2,1)
-    assignToDej(schedule,setup_docs,8,3,3,1)
-    assignToDej(schedule,setup_docs,1,5,1,1)
-    assignToDej(schedule,setup_docs,2,2,1,1)
+    assignToDej(schedule,setup_docs,4,30,1)
+    assignToDej(schedule,setup_docs,2,30,3)
+    assignToDej(schedule,setup_docs,3,30,2)
 
     printScheduleHuman(schedule, setup_docs)
+    print(setup_docs.getRealDejs())
 
 def test_isCorpRight():
     assert 1  == isCorpRight(100,1)
@@ -130,6 +135,7 @@ def test_isSuitableSequence(setup_docs):
     assignToDej(schedule,setup_docs,0,5,1,1)
     assignToDej(schedule,setup_docs,0,10,1,1)
     assignToDej(schedule,setup_docs,0,15,2,1)
+    assignToDej(schedule,setup_docs,0,2,5,3)
     
 #    printScheduleHuman(schedule, setup_docs)
 
@@ -139,10 +145,11 @@ def test_isSuitableSequence(setup_docs):
     assert True == isSuitableSequence(schedule, setup_docs,0,30)
     assert False == isSuitableSequence(schedule, setup_docs,0,9)
     assert False == isSuitableSequence(schedule, setup_docs,0,31)
+    assert True == isSuitableSequence(schedule, setup_docs,2,5)
 
 
 
-    isSuitableSequence(schedule, setup_docs, 0, 1)
+
 
  
 def test_getAmbitOne(setup_docs):
@@ -203,9 +210,35 @@ def test_isScheduleFull_not_full(setup_docs):
 #    pdb.set_trace()
     assert False == isScheduleFull(schedule,setup_docs)
 
+
 @pytest.mark.skip()
 def test_convDayToDayAndCorp():
     days = 29 
     t = range(0,88)
     for i in t:
         print(i, convDayToDayAndCorp(i,days))
+
+#@pytest.mark.skip()
+def test_isSuitableDej(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,10,1,1)
+    assignToDej(schedule,setup_docs,0,15,1,1)
+    assignToDej(schedule,setup_docs,0,20,1,1)
+
+ #   print(setup_docs.getRealDejs().shape[0])
+
+ #   print(setup_docs.getRealDejs())
+#    pdb.set_trace()
+    assert False == isSuitableDej(schedule,setup_docs,0,20)
+#    pdb.set_trace()
+    assert True == isSuitableDej(schedule,setup_docs,2,65)
+    
+    assert False == isSuitableDej(schedule,setup_docs,4,20)
+
+
+    printScheduleHuman(schedule,setup_docs)
+    printScheduleHumanSum(schedule,setup_docs)
+    
+
