@@ -269,29 +269,29 @@ def getInitShedule(doc):
 
     while not isScheduleFull(schedule,doc):
         l = np.random.randint(0,nmb_dejs)
-        day = np.random.randint(1,days*nmb_corps)
-        day_real = convDayToDayAndCorp(day,days)[0]
-        corp_real = convDayToDayAndCorp(day,days)[1]
+        day = np.random.randint(1,days*nmb_corps+1)
+        day_real, corp_real = convDayToDayAndCorp(day,days)
         cnt+=1
+  #      print(cnt)
 
-        dej_doc = dejs.iloc[l]
+ #       dej_doc = dejs.iloc[l]
  #       pdb.set_trace()
  #       print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,corp_real)
 
 
         if isSuitableDej(schedule, doc,l,day):
- #           print(cnt)
-            print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,
-                    corp_real)
+  #          print(cnt)
+ #           print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,
+  #                  corp_real)
             assignToDej(schedule,doc,l,day_real,corp_real)
-            printScheduleHuman(schedule,doc)
+   #         printScheduleHuman(schedule,doc)
 
 
         if cnt >1000:
             printScheduleHuman(schedule,doc)
             printScheduleHumanSum(schedule,doc)
 
-            return
+            break
 
     printScheduleHuman(schedule,doc)
 
@@ -360,7 +360,8 @@ def isSuitableDej(schedule, doc, dej_index, day):
 #    doc_dej = dejs[dej_index]
 #    print(doc_dej
     
-    if not isFreeDay(schedule,day):
+    if not isFreeDay(schedule,doc,day):
+  #      print("isFreeDay false")
         return False
     
 
@@ -372,12 +373,12 @@ def isSuitableDej(schedule, doc, dej_index, day):
    
     if not isSuitableQuantity(schedule,doc,dej_index,
             max_nmb_dej):
-#        print("Не походит количество")
+ #       print("Не походит количество")
         return False
 
 
     if not isSuitableSequence(schedule, doc, dej_index, conv_day):
-  #      print("Не походит последовательность")
+ #       print("Не походит последовательность")
         return False
 
     return True
@@ -414,7 +415,7 @@ def isSuitableQuantity(schedule, doc, dej_index, max_nmb_dej):
     num_rows, num_cols  = dejs.shape
     schedule = schedule.reshape(num_rows,nmb_max)
     schedule_doc = schedule[dej_index]
- #   dej_doc = dejs.iloc[dej_index]
+    #   dej_doc = dejs.iloc[dej_index]
     sum = np.sum(schedule_doc)
 
     if sum < max_nmb_dej:
@@ -423,7 +424,7 @@ def isSuitableQuantity(schedule, doc, dej_index, max_nmb_dej):
     return False
 
 def isSuitableCorpus(doc, dej_index, day):
-    
+
     df = doc.getRealDejs()
     dej_corp  = df.iloc[dej_index]['CORPUS']
     days = doc.getDaysInMonth()
@@ -431,9 +432,32 @@ def isSuitableCorpus(doc, dej_index, day):
     possible_corpus = getNmbCorpusFrom1d(day,days,nmb_corps)
     return isCorpRight(dej_corp,possible_corpus) 
 
-def isFreeDay(schedule,day):
+def isFreeDay(schedule,doc,day):
+    dejs = doc.getRealDejs()    
+    days = doc.getDaysInMonth()
+    corps = doc.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+
+    #    pdb.set_trace()
+
+    schedule_sum = np.sum(schedule, axis=0)
+#    print('day',day)
+#    print(schedule_sum)
+ #   print(schedule_sum[day-1])
+
+    if schedule_sum[day-1]==0:
+ #       print('True')
+
+        return True
+    else:
+#        print('False')
+        return False
+
+
     return True
-    
+
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     """
     присваивает (flag=1) и удаляет (flag=0) дежурства 
@@ -463,14 +487,14 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
         print("Flag может принимать значения 0 и 1", flag)
         return 0
 
-#    pdb.set_trace()
-    
+    #    pdb.set_trace()
+
     dej_doc = df.iloc[dej_index]
 
     schedule = schedule.reshape(nmb_dej_doc, days*nmb_corps)
 
     schedule[dej_index][(corpus-1)*days + day - 1] = flag
-    
+
     return schedule.flatten()
 
 def printScheduleHuman(schedule, doc):
@@ -544,7 +568,7 @@ def printScheduleHuman(schedule, doc):
       #  print('schedule_with_date[ind_data][ind_corpus]',
        #         schedule_with_date[ind_data][ind_corpus]  )
         if ind_data < days:
-            schedule_with_date[ind_data][ind_corpus] = schedule[a[0]][0].ljust(12)
+            schedule_with_date[ind_data][ind_corpus] = schedule[a[0]][0].ljust(17)
    
 
     print()
