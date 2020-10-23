@@ -271,6 +271,28 @@ def getInitShedule(doc):
         l = np.random.randint(0,nmb_dejs)
         day = np.random.randint(1,days*nmb_corps+1)
         day_real, corp_real = convDayToDayAndCorp(day,days)
+#        print(day_real,corp_real)
+
+        if day_real==1 and corp_real==2:
+            dej_doc = dejs.iloc[l]
+            print(day_real,corp_real)
+            print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day_real,corp_real)
+            getDejsForDoc(schedule,doc,l)
+            ar = getFreeDejFromSchedule(schedule,doc.getDaysInMonth(),
+                    doc.getCorps())
+            print(ar)
+            if np.any(ar==31):
+                print('31 свободен')
+ #           pdb.set_trace()
+            print('isFreeDay',isFreeDay(schedule,doc,day))
+        #    print('IsSuitableCorpus',isSuitableCorpus(doc,l,day))
+ #           print('isSuitableSequence',isSuitableSequence(schedule,doc,l,day))
+  #          printScheduleHuman(schedule,doc)
+   #         printScheduleHumanSum(schedule,doc)
+        
+
+
+
         cnt+=1
   #      print(cnt)
 
@@ -281,19 +303,21 @@ def getInitShedule(doc):
 
         if isSuitableDej(schedule, doc,l,day):
   #          print(cnt)
- #           print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,
-  #                  corp_real)
+            if day==31 and corp_real==2:
+                print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,
+                    corp_real)
             assignToDej(schedule,doc,l,day_real,corp_real)
-   #         printScheduleHuman(schedule,doc)
+ #           printScheduleHuman(schedule,doc)
 
 
-        if cnt >1000:
+        if cnt >2000:
             printScheduleHuman(schedule,doc)
             printScheduleHumanSum(schedule,doc)
+        
+
 
             break
 
-    printScheduleHuman(schedule,doc)
 
 
 
@@ -354,31 +378,31 @@ def isSuitableDej(schedule, doc, dej_index, day):
     """
 #    pdb.set_trace()
     conv_day,corpus = convDayToDayAndCorp(day,doc.getDaysInMonth())
-    max_nmb_dej = doc.getNmbRealDejs()
+    max_nmb_dej = 4 
     dejs = doc.getRealDejs()
 #    pdb.set_trace()
 #    doc_dej = dejs[dej_index]
 #    print(doc_dej
     
     if not isFreeDay(schedule,doc,day):
-  #      print("isFreeDay false")
+ #       print("isFreeDay false")
         return False
     
 
 
     if not isSuitableCorpus(doc,dej_index,day):
- #       print("Не походит корпус")
+#        print("Не походит корпус")
         return False
 
    
     if not isSuitableQuantity(schedule,doc,dej_index,
             max_nmb_dej):
- #       print("Не походит количество")
+#        print("Не походит количество")
         return False
 
 
     if not isSuitableSequence(schedule, doc, dej_index, conv_day):
- #       print("Не походит последовательность")
+#        print("Не походит последовательность")
         return False
 
     return True
@@ -432,7 +456,7 @@ def isSuitableCorpus(doc, dej_index, day):
     possible_corpus = getNmbCorpusFrom1d(day,days,nmb_corps)
     return isCorpRight(dej_corp,possible_corpus) 
 
-def isFreeDay(schedule,doc,day):
+def isFreeDayOld(schedule,doc,day):
     dejs = doc.getRealDejs()    
     days = doc.getDaysInMonth()
     corps = doc.getCorps()
@@ -440,7 +464,7 @@ def isFreeDay(schedule,doc,day):
     num_rows, num_cols  = dejs.shape
     schedule = schedule.reshape(num_rows,nmb_max)
 
-    #    pdb.set_trace()
+#    pdb.set_trace()
 
     schedule_sum = np.sum(schedule, axis=0)
 #    print('day',day)
@@ -456,7 +480,13 @@ def isFreeDay(schedule,doc,day):
         return False
 
 
-    return True
+    return Truei
+
+def isFreeDay(schedule,day):
+    if schedule[day-1]==1:
+        return False
+    else:
+        return True
 
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     """
@@ -515,7 +545,7 @@ def printScheduleHuman(schedule, doc):
     o = doc.getRealDejs()['SURNAME']
     dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
     dejs = dejs.reshape((-1,1))
-
+#    pdb.set_trace()
     # преобразуем ДНК в двумерный массив
     schedule = schedule.reshape((len(dejs),
         int(len(schedule)/len(dejs))))
@@ -549,7 +579,7 @@ def printScheduleHuman(schedule, doc):
     # переносим данные в конечную таблицу,
     # попутно заполняя текстовые поля пробеллами
     # справа до 12
-#    pdb.set_trace()
+ #   pdb.set_trace()
     for a in np.nditer(is_one):
 #        print()
  #       print('a',a)
@@ -570,11 +600,11 @@ def printScheduleHuman(schedule, doc):
         if ind_data < days:
             schedule_with_date[ind_data][ind_corpus] = schedule[a[0]][0].ljust(17)
    
-
+    df = pd.DataFrame(schedule_with_date)
     print()
     print("Расписание дежурств УЗ 'МООД'")
     print("Месяц ",doc.getMonth())
-    print(schedule_with_date)
+    print(df)
     print('Свободных смен - ',np.sum(pd.isnull(schedule_with_date)))
 
 #    pdb.set_trace()
@@ -617,6 +647,20 @@ def printScheduleHumanSum(schedule, doc):
 
 #    pdb.set_trace()
 
+def getDejsForDoc(schedule, doc, dej_index):
+    dejs = doc.getRealDejs()    
+    days = doc.getDaysInMonth()
+    corps = doc.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+    dd = np.where(schedule[dej_index]==1)
+    dd = (i + 1  for i in dd)
+    for i in dd:
+        print(i)
+
+    return
+
 
 
 def getNmbCorpusFrom1d(nmb,nmb_days_in_month,nmb_corps):
@@ -645,9 +689,9 @@ def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
         print("Неправильный номер дня", nmb)
         return 0 
     if nmb <= nmb_days_in_month:
-        return nmb
+        return nmb-1
     else:
-        return nmb % nmb_days_in_month
+        return nmb % nmb_days_in_month-1
 
 def isCorpRight(dej_corp,possible_corpus):
     if dej_corp==1 and possible_corpus==3:
@@ -730,6 +774,30 @@ def convDayToDayAndCorp(day,days):
         return (days,mod)
     else:
         return (div,mod+1)
+
+def convDayCorpDejToFlatten(schedule,doc,day,corp,dej):
+    days = doc.getDaysInMonth()
+    corps = doc.getCorps()
+    dejs = doc.getNmbRealDejs()
+   
+    if len(schedule) != days*corps*dejs:
+        print("Неправильное число дней в массиве")
+        return
+ #   pdb.set_trace()
+    margin_dej = dej * (corp-1) * dejs
+    margin_corps = days * (corp-1)
+    day_flatten = margin_dej + margin_corps + day - 1
+
+    return day_flatten
+
+
+
+
+
+
+
+    
+    
 
 
 

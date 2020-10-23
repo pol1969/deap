@@ -25,7 +25,7 @@ def test_random_solution(setup_docs):
  #   print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
 
-pytest.mark.skip()
+@pytest.mark.skip()
 def test_getInitShedule(setup_docs):
     start_time = time.time()
     print(time.time())
@@ -96,24 +96,25 @@ def test_getNmbCorpusFrom1d():
 def test_getDayFrom1d():
     nmb_days = 30
     nmb_corps = 3
-    assert 3 == getDateFrom1d(3,nmb_days,nmb_corps)
-    assert 2  == getDateFrom1d(32,nmb_days,nmb_corps)
+    assert 2 == getDateFrom1d(3,nmb_days,nmb_corps)
+    assert 1  == getDateFrom1d(32,nmb_days,nmb_corps)
 #    assert 0 == getDateFrom1d(100,nmb_days,nmb_corps)
-    assert 10 == getDateFrom1d(70,nmb_days,nmb_corps)
-    assert 30 == getDateFrom1d(30,nmb_days,nmb_corps)
+    assert 9 == getDateFrom1d(70,nmb_days,nmb_corps)
+    assert 29 == getDateFrom1d(30,nmb_days,nmb_corps)
 
 
 
 
-@pytest.mark.skip()
+pytest.mark.skip()
 def test_printScheduleHuman(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,4,30,1)
-    assignToDej(schedule,setup_docs,2,30,3)
-    assignToDej(schedule,setup_docs,3,30,2)
+    assignToDej(schedule,setup_docs,10,1,3)
+#    assignToDej(schedule,setup_docs,2,30,3)
+ #   assignToDej(schedule,setup_docs,3,30,2)
 
     printScheduleHuman(schedule, setup_docs)
-    print(setup_docs.getRealDejs())
+    printScheduleHumanSum(schedule,setup_docs)
+#    print(setup_docs.getRealDejs())
 
 def test_isCorpRight():
     assert 1  == isCorpRight(100,1)
@@ -240,28 +241,49 @@ def test_isSuitableDej(setup_docs):
 
     printScheduleHuman(schedule,setup_docs)
     printScheduleHumanSum(schedule,setup_docs)
-#@pytest.mark.skip()    
+@pytest.mark.skip()    
 def test_isFreeDay(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,5,5,1,1)
+    assignToDej(schedule,setup_docs,9,10,1,1)
+    assignToDej(schedule,setup_docs,8,15,1,1)
+    assignToDej(schedule,setup_docs,7,20,1,1)
+    assignToDej(schedule,setup_docs,1,1,2,1)
+
+#    printScheduleHuman(schedule,setup_docs)
+#    printScheduleHumanSum(schedule,setup_docs)
+ #   assert True == isFreeDay(schedule,setup_docs,3)
+   # pdb.set_trace()
+ #   assert True  == isFreeDay(schedule,5)
+  #  assert True  == isFreeDay(schedule,20)
+ #   assert False  == isFreeDay(schedule,10)
+  #  assert True  == isFreeDay(schedule,2)
+   # assert True  == isFreeDay(schedule,11)
+  #  assert False  == isFreeDay(schedule,31)
+
+    
+def test_getDejForDoc(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,9,1,1)
     assignToDej(schedule,setup_docs,5,5,2,1)
     assignToDej(schedule,setup_docs,9,10,3,1)
     assignToDej(schedule,setup_docs,8,15,2,1)
     assignToDej(schedule,setup_docs,7,20,1,1)
 
-#    printScheduleHuman(schedule,setup_docs)
-#    printScheduleHumanSum(schedule,setup_docs)
- #   assert True == isFreeDay(schedule,setup_docs,3)
-#    pdb.set_trace()
-  #  assert False  == isFreeDay(schedule,setup_docs,5)
-  ##  assert False  == isFreeDay(schedule,setup_docs,20)
-  #  assert False  == isFreeDay(schedule,setup_docs,10)
-  #  assert True  == isFreeDay(schedule,setup_docs,2)
-  #  assert True  == isFreeDay(schedule,setup_docs,11)
-    assert True  == isFreeDay(schedule,setup_docs,30)
-
-    
+    getDejsForDoc(schedule,setup_docs,0)
 
 
 
+@pytest.mark.skip()
+def test_convDayCorpDejToFlatten(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    z = convDayCorpDejToFlatten(schedule,setup_docs,1,1,4)
+    schedule[z] = 1
+    getDejsForDoc(schedule,setup_docs,0)
+    printScheduleHuman(schedule,setup_docs)
+    printScheduleHumanSum(schedule,setup_docs)
+ 
 
