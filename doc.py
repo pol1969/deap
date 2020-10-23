@@ -527,7 +527,7 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
 
     return schedule.flatten()
 
-def printScheduleHuman(schedule, doc):
+def printScheduleHumanOld(schedule, doc):
     """
     Выводит расписание в нужном конечном формате
     :schedule ДНК расписания, двоичный 1d массив
@@ -609,6 +609,80 @@ def printScheduleHuman(schedule, doc):
 
 #    pdb.set_trace()
     return schedule_with_date
+
+def printScheduleHuman(schedule, doc):
+    """
+    Выводит расписание в нужном конечном формате
+    :schedule ДНК расписания, двоичный 1d массив
+    :doc - объект DocSchedulingProblem
+    :return требуемая таблица
+    """
+
+    corps = doc.getCorps()
+    days = doc.getDaysInMonth()
+    fam = doc.getRealDejs()['FAM']
+
+    # формируем столбик из дежурантов,
+    # попутно добавляем к фамилии И О
+    i = doc.getRealDejs()['NAME']
+    o = doc.getRealDejs()['SURNAME']
+    dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
+    dejs = dejs.reshape((-1,1))
+#    pdb.set_trace()
+    # преобразуем ДНК в двумерный массив
+    schedule = schedule.reshape((len(dejs),
+        int(len(schedule)/len(dejs))))
+
+    # цепляем слева столбец с ФИО дежурантов
+    schedule = np.hstack((dejs,schedule))
+
+    # можно сделать максимальный вывод таблицы без сокращений
+    np.set_printoptions(threshold=sys.maxsize)
+
+    # ищем в расписании единицы и получаем массивы координат
+    #pdb.set_trace()
+    is_one = np.where(schedule==1) 
+
+    # начинаем формировать конечную матрицу
+    # dtype object позволяет работать со строками
+    hum = np.empty((days,3),dtype='object')
+    
+    # формируем массив дат для конечной таблицы
+    dates = np.arange(np.datetime64(dt.date(doc.getYear(),
+        doc.getMonth(),1)),days)
+    # преобразуем его в столбец
+    dates = dates.reshape(-1,1)
+
+    # цепляем столбец с датами слева, попутно преобразуя
+    # его в строку
+    schedule_with_date = np.hstack(((dates.astype('str')),
+        hum))
+
+    # nditer позволяет итерировать двумерный массив
+    # переносим данные в конечную таблицу,
+    # попутно заполняя текстовые поля пробеллами
+    # справа до 12
+#    pdb.set_trace()
+    it0 = np.nditer(is_one,flags=["multi_index"])
+    for y in it0:
+        print(y,it0.multi_index)
+   
+
+    schedule_with_date[0][1] = 'Проба' 
+    
+
+    df = pd.DataFrame(schedule_with_date,columns=['Дата','2_корпус','1_корпус','Хоспис'])   
+    for i, j in df.iterrows():
+        print(i,j[0],j[1],j[2],j[3])
+    print()
+    print("Расписание дежурств УЗ 'МООД'")
+    print("Месяц ",doc.getMonth())
+    print(df.to_string(index=False))
+    print('Свободных смен - ',np.sum(pd.isnull(schedule_with_date)))
+
+#    pdb.set_trace()
+    return schedule_with_date
+
 
 def printScheduleHumanSum(schedule, doc):
     """

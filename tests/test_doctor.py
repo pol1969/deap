@@ -109,8 +109,8 @@ pytest.mark.skip()
 def test_printScheduleHuman(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,10,1,3)
-#    assignToDej(schedule,setup_docs,2,30,3)
- #   assignToDej(schedule,setup_docs,3,30,2)
+    assignToDej(schedule,setup_docs,2,30,3)
+    assignToDej(schedule,setup_docs,3,30,2)
 
     printScheduleHuman(schedule, setup_docs)
     printScheduleHumanSum(schedule,setup_docs)
