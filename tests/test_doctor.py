@@ -79,9 +79,6 @@ def test_isSuitableCorpus(setup_docs):
   #      print(dej_doc['FAM'],d,isSuitableCorpus(setup_docs,i,d)) 
             
 
-def test_assignToDej(setup_docs):
-        
-    schedule = np.zeros(len(setup_docs),dtype=np.int8)
 
 
 
@@ -92,25 +89,30 @@ def test_getNmbCorpusFrom1d():
     assert 1 == getNmbCorpusFrom1d(20,nmb_days,nmb_corps)
     assert 2 == getNmbCorpusFrom1d(40,nmb_days,nmb_corps)
     assert 3 == getNmbCorpusFrom1d(70,nmb_days,nmb_corps)
+    assert 1 == getNmbCorpusFrom1d(29,nmb_days,nmb_corps)
+
 
 def test_getDayFrom1d():
     nmb_days = 30
     nmb_corps = 3
-    assert 2 == getDateFrom1d(3,nmb_days,nmb_corps)
-    assert 1  == getDateFrom1d(32,nmb_days,nmb_corps)
+    assert 3 == getDateFrom1d(3,nmb_days,nmb_corps)
+    assert 2  == getDateFrom1d(32,nmb_days,nmb_corps)
 #    assert 0 == getDateFrom1d(100,nmb_days,nmb_corps)
-    assert 9 == getDateFrom1d(70,nmb_days,nmb_corps)
-    assert 29 == getDateFrom1d(30,nmb_days,nmb_corps)
+    assert 10 == getDateFrom1d(70,nmb_days,nmb_corps)
+ #   assert 29 == getDateFrom1d(30,nmb_days,nmb_corps)
 
 
 
 
-pytest.mark.skip()
+@pytest.mark.skip()
 def test_printScheduleHuman(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,10,1,3)
-    assignToDej(schedule,setup_docs,2,30,3)
-    assignToDej(schedule,setup_docs,3,30,2)
+    assignToDej(schedule,setup_docs,0,1,1)
+    assignToDej(schedule,setup_docs,2,1,2)
+    assignToDej(schedule,setup_docs,3,1,3)
+    assignToDej(schedule,setup_docs,4,30,1)
+    assignToDej(schedule,setup_docs,5,30,2)
+    assignToDej(schedule,setup_docs,6,30,3)
 
     printScheduleHuman(schedule, setup_docs)
     printScheduleHumanSum(schedule,setup_docs)
@@ -245,21 +247,27 @@ def test_isSuitableDej(setup_docs):
 def test_isFreeDay(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
-    assignToDej(schedule,setup_docs,5,5,1,1)
+    print(schedule[0])
+#    pdb.set_trace()
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    print(schedule[5])
     assignToDej(schedule,setup_docs,9,10,1,1)
+    print(schedule[9])
     assignToDej(schedule,setup_docs,8,15,1,1)
     assignToDej(schedule,setup_docs,7,20,1,1)
-    assignToDej(schedule,setup_docs,1,1,2,1)
+
+#    pdb.set_trace()
 
 #    printScheduleHuman(schedule,setup_docs)
 #    printScheduleHumanSum(schedule,setup_docs)
- #   assert True == isFreeDay(schedule,setup_docs,3)
+    assert True == isFreeDay(schedule,3)
    # pdb.set_trace()
- #   assert True  == isFreeDay(schedule,5)
-  #  assert True  == isFreeDay(schedule,20)
- #   assert False  == isFreeDay(schedule,10)
-  #  assert True  == isFreeDay(schedule,2)
-   # assert True  == isFreeDay(schedule,11)
+    assert False  == isFreeDay(schedule,5)
+    assert False  == isFreeDay(schedule,
+            convDayCorpDejToFlatten(schedule,setup_docs,10,1,9))
+    assert False  == isFreeDay(schedule,10)
+    assert True  == isFreeDay(schedule,2)
+    assert True  == isFreeDay(schedule,11)
   #  assert False  == isFreeDay(schedule,31)
 
     
@@ -277,13 +285,77 @@ def test_getDejForDoc(setup_docs):
 
 
 
-@pytest.mark.skip()
-def test_convDayCorpDejToFlatten(setup_docs):
+pytest.mark.skip()
+def test_convDejDayCorpToFlatten(setup_docs):
+    """
+    Первый по-настоящемк хороший железный тест
+    через разработку. Нашел формулу перевода доктор-день-корпус
+    в индекс schedule через assignToDej
+    """
+
+    days = setup_docs.getDaysInMonth()
+    corps = setup_docs.getCorps()
+    dejs = setup_docs.getNmbRealDejs()
+
+        
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    z = convDayCorpDejToFlatten(schedule,setup_docs,1,1,4)
-    schedule[z] = 1
-    getDejsForDoc(schedule,setup_docs,0)
-    printScheduleHuman(schedule,setup_docs)
-    printScheduleHumanSum(schedule,setup_docs)
- 
+    
+    cnt = 10
+    while cnt >=0:
+        day = np.random.randint(1,days+1)
+        dej = np.random.randint(1,dejs)
+        corp = np.random.randint(1,corps+1)
+        assignToDej(schedule,setup_docs,dej,day,corp)
+ #       print(np.where(schedule==1))
+        i = convDejDayCorpToFlatten(schedule,setup_docs,
+            dej,day,corp)
+  #      print(i)
+
+        assert schedule[i]==1
+        cnt -= 1
+
+
+
+def test_convFlattenToDejDayCorp(setup_docs):
+    """
+    Первый по-настоящемк хороший железный тест
+    через разработку. Нашел формулу перевода доктор-день-корпус
+    в индекс schedule через assignToDej
+    """
+
+    days = setup_docs.getDaysInMonth()
+    corps = setup_docs.getCorps()
+    dejs = setup_docs.getNmbRealDejs()
+
+        
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    
+    cnt = 10
+    while cnt >=0:
+        day = np.random.randint(1,days+1)
+        dej = np.random.randint(1,dejs)
+        corp = np.random.randint(1,corps+1)
+ #       print()
+ #       print('dej,day,corp',dej,day,corp)
+        assignToDej(schedule,setup_docs,dej,day,corp)
+        i = convDejDayCorpToFlatten(schedule,setup_docs,
+            dej,day,corp)
+ #       print(i,'Дежурант', convFlattenToDejDayCorp(setup_docs,i,days)[0])
+
+
+ #       print(i,'День', convFlattenToDejDayCorp(setup_docs,i,days)[1])
+ #       print(i,'Корпус', convFlattenToDejDayCorp(setup_docs,i,days)[2])
+        assert dej == convFlattenToDejDayCorp(setup_docs,i,days)[0]
+
+        assert day == convFlattenToDejDayCorp(setup_docs,i,days)[1]
+        assert corp == convFlattenToDejDayCorp(setup_docs,i, days)[2]
+        cnt -= 1
+
+
+
+
+
+
+
+
 

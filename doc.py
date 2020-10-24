@@ -273,44 +273,23 @@ def getInitShedule(doc):
         day_real, corp_real = convDayToDayAndCorp(day,days)
 #        print(day_real,corp_real)
 
-        if day_real==1 and corp_real==2:
-            dej_doc = dejs.iloc[l]
-            print(day_real,corp_real)
-            print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day_real,corp_real)
-            getDejsForDoc(schedule,doc,l)
-            ar = getFreeDejFromSchedule(schedule,doc.getDaysInMonth(),
-                    doc.getCorps())
-            print(ar)
-            if np.any(ar==31):
-                print('31 свободен')
- #           pdb.set_trace()
-            print('isFreeDay',isFreeDay(schedule,doc,day))
-        #    print('IsSuitableCorpus',isSuitableCorpus(doc,l,day))
- #           print('isSuitableSequence',isSuitableSequence(schedule,doc,l,day))
-  #          printScheduleHuman(schedule,doc)
-   #         printScheduleHumanSum(schedule,doc)
-        
-
-
+   
 
         cnt+=1
   #      print(cnt)
 
- #       dej_doc = dejs.iloc[l]
+        dej_doc = dejs.iloc[l]
  #       pdb.set_trace()
- #       print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,corp_real)
+        print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,corp_real,getDejsForDoc(schedule,doc,l))
 
 
         if isSuitableDej(schedule, doc,l,day):
   #          print(cnt)
-            if day==31 and corp_real==2:
-                print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,
-                    corp_real)
             assignToDej(schedule,doc,l,day_real,corp_real)
- #           printScheduleHuman(schedule,doc)
+            printScheduleHuman(schedule,doc)
 
 
-        if cnt >2000:
+        if cnt >1000:
             printScheduleHuman(schedule,doc)
             printScheduleHumanSum(schedule,doc)
         
@@ -384,7 +363,7 @@ def isSuitableDej(schedule, doc, dej_index, day):
 #    doc_dej = dejs[dej_index]
 #    print(doc_dej
     
-    if not isFreeDay(schedule,doc,day):
+    if not isFreeDay(schedule,day):
  #       print("isFreeDay false")
         return False
     
@@ -483,6 +462,7 @@ def isFreeDayOld(schedule,doc,day):
     return Truei
 
 def isFreeDay(schedule,day):
+   # pdb.set_trace()
     if schedule[day-1]==1:
         return False
     else:
@@ -665,11 +645,27 @@ def printScheduleHuman(schedule, doc):
 #    pdb.set_trace()
     it0 = np.nditer(is_one,flags=["multi_index"])
     for y in it0:
-        print(y,it0.multi_index)
+  #      print()
+ #       print(y,it0.multi_index)
+
+        dd = getDateFrom1d(y[1]-1,days,corps)
+ #       print('Дата',dd)
+
+        cc = getNmbCorpusFrom1d(y[1],days,corps)
+ #       print('Корпус',cc)
+
+ #       print('Дежурант',dejs[y[0]])
+
+ #       print('Cell',schedule_with_date[dd][cc])
+
+        schedule_with_date[dd][cc]= dejs[y[0]]
    
 
-    schedule_with_date[0][1] = 'Проба' 
+
     
+ #   for i in range(0,90):
+ #
+  #     print(i, getDateFrom1d(i,30,3),getNmbCorpusFrom1d(i,30,3))
 
     df = pd.DataFrame(schedule_with_date,columns=['Дата','2_корпус','1_корпус','Хоспис'])   
     for i, j in df.iterrows():
@@ -741,8 +737,8 @@ def getNmbCorpusFrom1d(nmb,nmb_days_in_month,nmb_corps):
     """
     :return номер корпуса по числу из ДНК - schedule
     """
-
-    if nmb<=0 or nmb >nmb_days_in_month*nmb_corps:
+ #   pdb.set_trace()
+    if nmb<0 or nmb >nmb_days_in_month*nmb_corps:
         print("Неправильный номер дня", nmb)
  #       pdb.set_trace()
         return 0 
@@ -762,10 +758,10 @@ def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
     if nmb<0 or nmb >nmb_days_in_month*nmb_corps:
         print("Неправильный номер дня", nmb)
         return 0 
-    if nmb <= nmb_days_in_month:
-        return nmb-1
+    if nmb < nmb_days_in_month:
+        return nmb
     else:
-        return nmb % nmb_days_in_month-1
+        return nmb % nmb_days_in_month
 
 def isCorpRight(dej_corp,possible_corpus):
     if dej_corp==1 and possible_corpus==3:
@@ -837,42 +833,27 @@ def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
 
     return ret
 
-def convDayToDayAndCorp(day,days):
+def convFlattenToDejDayCorp(doc,day,days):
     """
-    определяет по индексу в schedule день и корпус
+    определяет по индексу в schedule дежуранта,день и корпус
     """
+    corps = doc.getCorps()
+    dejs = doc.getNmbRealDejs()
     mod = day//days
     div = day%days
 
     if div==0:
-        return (days,mod)
+        return (day//(days*corps),1,mod%corps+1)
     else:
-        return (div,mod+1)
+        return (day//(days*corps),div+1,mod%corps+1)
 
-def convDayCorpDejToFlatten(schedule,doc,day,corp,dej):
+
+def convDejDayCorpToFlatten(schedule,doc,dej,day,corp):
     days = doc.getDaysInMonth()
     corps = doc.getCorps()
     dejs = doc.getNmbRealDejs()
    
-    if len(schedule) != days*corps*dejs:
-        print("Неправильное число дней в массиве")
-        return
- #   pdb.set_trace()
-    margin_dej = dej * (corp-1) * dejs
-    margin_corps = days * (corp-1)
-    day_flatten = margin_dej + margin_corps + day - 1
-
-    return day_flatten
-
-
-
-
-
-
-
-    
-    
-
+    return dej*days*corps +(corp-1)*days + day-1
 
 
 
