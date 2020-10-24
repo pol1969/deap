@@ -67,17 +67,27 @@ def test_getFreeDejs():
     assert np.array_equal(ar1,c) 
 
 def test_isSuitableCorpus(setup_docs):
-    dejs = setup_docs.getRealDejs()
+
     days = setup_docs.getDaysInMonth()
     corps = setup_docs.getCorps()
-    nmb_max = days*corps
-    num_rows, num_cols  = dejs.shape
- #   print(dejs)
-    for i in np.arange(num_rows):
-        dej_doc = dejs.iloc[i]
-        d =  np.random.randint(1,nmb_max+1)
-  #      print(dej_doc['FAM'],d,isSuitableCorpus(setup_docs,i,d)) 
-            
+    dejs = setup_docs.getNmbRealDejs()
+    docs = setup_docs.getRealDejs()
+
+        
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    
+    cnt = 10
+    while cnt >=0:
+        day = np.random.randint(1,days+1)
+        dej = np.random.randint(1,dejs)
+        corp = np.random.randint(1,corps+1)
+ #       pdb.set_trace()
+        
+        print(docs.iloc[dej]['FAM'],day,'corp=',corp,
+                isSuitableCorpus(setup_docs,dej,day)) 
+        cnt -= 1
+
+
 
 
 
@@ -214,12 +224,6 @@ def test_isScheduleFull_not_full(setup_docs):
     assert False == isScheduleFull(schedule,setup_docs)
 
 
-@pytest.mark.skip()
-def test_convDayToDayAndCorp():
-    days = 29 
-    t = range(0,88)
-    for i in t:
-        print(i, convDayToDayAndCorp(i,days))
 
 @pytest.mark.skip()
 def test_isSuitableDej(setup_docs):
@@ -230,19 +234,15 @@ def test_isSuitableDej(setup_docs):
     assignToDej(schedule,setup_docs,0,15,1,1)
     assignToDej(schedule,setup_docs,0,20,1,1)
 
- #   print(setup_docs.getRealDejs().shape[0])
-
- #   print(setup_docs.getRealDejs())
-#    pdb.set_trace()
-    assert False == isSuitableDej(schedule,setup_docs,0,20)
-#    pdb.set_trace()
- #   assert True == isSuitableDej(schedule,setup_docs,2,65)
-    
-    assert False == isSuitableDej(schedule,setup_docs,4,20)
+    #не тот корпус
+    i = convDejDayCorpToFlatten(schedule,setup_docs,0,1,2)
+    assert False == isSuitableDej(schedule,setup_docs,0,i)
 
 
     printScheduleHuman(schedule,setup_docs)
     printScheduleHumanSum(schedule,setup_docs)
+
+
 @pytest.mark.skip()    
 def test_isFreeDay(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)

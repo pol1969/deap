@@ -241,64 +241,38 @@ class DocSchedulingProblem:
 
 def getInitShedule(doc):
     """
-1 Взять случайного дежуранта из списка ✓
-2 Рассчитать среднее количество дежурств на дежуранта
-3 Генерировать максимально разбросанные даты дежурств
-4 Проверить совпадения по уже поставленным с учетом корпусов, 	корпуса можно делить поровну
-5 Если есть совпадения, сдвинуть на один день
-6 Повторить пункт 4
-7 Проверить минимальное расстояние между дежурствами
-    """
- 
-#    pdb.set_trace()
-    #количество дежурств в следующем месяце,
-    #умноженное на количество дежурантов -
-    shifts = len(doc)
-
-
-    #генерировать массив нулей
-    schedule = np.zeros(shifts,dtype=np.int8)
-    nmb_corps = doc.getCorps()
+    1 Взять случайного дежуранта из списка ✓
+    2 Рассчитать среднее количество дежурств на дежуранта
+    3 Генерировать максимально разбросанные даты дежурств
+    4 Проверить совпадения по уже поставленным с учетом корпусов, 	корпуса можно делить поровну
+    5 Если есть совпадения, сдвинуть на один день
+    6 Повторить пункт 4
+    7 Проверить минимальное расстояние между дежурствами
+        """
+    schedule = np.zeros(len(doc),dtype=np.int8)
+    corps = doc.getCorps()
     days = doc.getDaysInMonth()
-#    nmb_dejs = len(doc.getRealDejs())
-    dejs = doc.getRealDejs()
-#    pdb.set_trace()
-    nmb_dejs = doc.getRealDejs().shape[0]
-    cnt=0
+    dejs = doc.getNmbRealDejs()
     
-
+    cnt=0
     while not isScheduleFull(schedule,doc):
-        l = np.random.randint(0,nmb_dejs)
-        day = np.random.randint(1,days*nmb_corps+1)
-        day_real, corp_real = convDayToDayAndCorp(day,days)
-#        print(day_real,corp_real)
-
-   
+        day = np.random.randint(1,days+1)
+        dej = np.random.randint(1,dejs)
+        corp = np.random.randint(1,corps+1)
+       
+        i = convDejDayCorpToFlatten(schedule,doc,dej,day,corp)
 
         cnt+=1
-  #      print(cnt)
 
-        dej_doc = dejs.iloc[l]
- #       pdb.set_trace()
-        print(cnt,dej_doc['FAM'],dej_doc['CORPUS'],day,corp_real,getDejsForDoc(schedule,doc,l))
-
-
-        if isSuitableDej(schedule, doc,l,day):
-  #          print(cnt)
-            assignToDej(schedule,doc,l,day_real,corp_real)
+        if isSuitableDej(schedule, doc,dej,i):
+            assignToDej(schedule,doc,dej,day,corp)
             printScheduleHuman(schedule,doc)
 
 
         if cnt >1000:
             printScheduleHuman(schedule,doc)
             printScheduleHumanSum(schedule,doc)
-        
-
-
             break
-
-
-
 
 def isScheduleFull(schedule,doc):
     len_sched = len(schedule)
