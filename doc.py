@@ -254,35 +254,60 @@ def getInitSchedule(doc):
     days = doc.getDaysInMonth()
     nmb_dejs = doc.getNmbRealDejs()
     dejs = doc.getRealDejs()
+    sched_90 = np.arange(1,corps*days+1)
     
     cnt=0
     while not isScheduleFull(schedule,doc):
-        day = np.random.randint(1,days+1)
+        
         dej = np.random.randint(0,nmb_dejs)
-        corp = np.random.randint(1,corps+1)
+        d = np.random.choice(sched_90)
+
+        if d%days == 0:
+            day = days
+#            pdb.set_trace()
+            corp = d//days
+        else:
+            day = d%days
+            corp = (d//days)+1
+
+        
+ #       pdb.set_trace() 
+ #       day = np.random.randint(1,days+1)
+ #       dej = np.random.randint(0,nmb_dejs)
+ #       corp = np.random.randint(1,corps+1)
  #       print()
  #       print(cnt,dejs.iloc[dej]['FAM'],day,corp)
   #      print(getDejsForDoc(schedule,doc,dej))
        
-        i = convDejDayCorpToFlatten(doc,dej,day,corp)
+        i = convDejDayCorpToFlatten(doc,dej,day,corp)   
 
         cnt+=1
+        print(cnt)
+   #     print(sched_90)
 
         if isSuitableDej(schedule, doc,i,4):
 #            print("Присваиваем: ")
  #           print(cnt,dejs.iloc[dej]['FAM'],day,corp)
 
             assignToDej(schedule,doc,dej,day,corp)
+ #           pdb.set_trace()
+ #           print(sched_90)
+            print('День ',d)
+            i, = np.where(sched_90==d)
+
+            sched_90 = np.delete(sched_90,i)
+            print('after delete',sched_90)
+ #           input()
 #            print('Присвоили')
     #        print(getDejsForDoc(schedule,doc,dej))
 
-            printScheduleHuman(schedule,doc)
-            printScheduleHumanSum(schedule,doc)
+#            printScheduleHuman(schedule,doc)
+ #           printScheduleHumanSum(schedule,doc)
  #           pdb.set_trace()
 
 
 
-        if cnt >2000:
+        if cnt >1000:
             break
 
  #       input()
@@ -459,6 +484,7 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
 
     if day > days:
         print("Неправильный номер дня ",day)
+        pdb.set_trace()
         return 0
     if dej_index > nmb_dej_doc:
         print("Неправильный индекс дежуранта ", dej_index)
@@ -618,7 +644,7 @@ def printScheduleHumanSum(schedule, doc):
 
     # можно сделать максимальный вывод таблицы без сокращений
     np.set_printoptions(threshold=sys.maxsize)
-#    print(schedule_2d_sum_with_dejs)
+    print(schedule_2d_sum_with_dejs)
     free_shifts = days*corps-all_sum
     print('Свободных смен ',free_shifts)
     return free_shifts
