@@ -25,11 +25,11 @@ def test_random_solution(setup_docs):
  #   print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
 
-@pytest.mark.skip()
-def test_getInitShedule(setup_docs):
+pytest.mark.skip()
+def test_getInitSchedule(setup_docs):
     start_time = time.time()
     print(time.time())
-    myInitSolution = getInitShedule(setup_docs)
+    myInitSolution = getInitSchedule(setup_docs)
     print('Время выполнения,сек - ', time.time()-start_time)
 
 #    print("My Init Solution= ")
@@ -74,7 +74,7 @@ def test_isSuitableCorpus(setup_docs):
     docs = setup_docs.getRealDejs()
 
         
-    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+#    schedule = np.zeros(len(setup_docs),dtype=np.int8)
     
     cnt = 10
     while cnt >=0:
@@ -82,9 +82,13 @@ def test_isSuitableCorpus(setup_docs):
         dej = np.random.randint(1,dejs)
         corp = np.random.randint(1,corps+1)
  #       pdb.set_trace()
+        day_in_sched = convDejDayCorpToFlatten(setup_docs,
+                dej,day,corp)
         
-        print(docs.iloc[dej]['FAM'],day,'corp=',corp,
-                isSuitableCorpus(setup_docs,dej,day)) 
+ #       print(docs.iloc[dej]['FAM'], docs.iloc[dej]['CORPUS'],
+#                day_in_sched,'corp=',corp,
+ #               isSuitableCorpus(setup_docs,dej,day_in_sched)) 
+        assert isCorpRight(docs.iloc[dej]['CORPUS'],corp) == isSuitableCorpus(setup_docs,dej,day_in_sched)
         cnt -= 1
 
 
@@ -114,7 +118,7 @@ def test_getDayFrom1d():
 
 
 
-@pytest.mark.skip()
+pytest.mark.skip()
 def test_printScheduleHuman(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1)
@@ -143,23 +147,52 @@ def test_isCorpRight():
 
  
 def test_isSuitableSequence(setup_docs):
+    days = setup_docs.getDaysInMonth()
+    corps = setup_docs.getCorps()
+    dejs = setup_docs.getNmbRealDejs()
+    nmb_neighb=3
 
+
+        
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,0,5,1,1)
-    assignToDej(schedule,setup_docs,0,10,1,1)
-    assignToDej(schedule,setup_docs,0,15,2,1)
-    assignToDej(schedule,setup_docs,0,2,5,3)
     
-#    printScheduleHuman(schedule, setup_docs)
+    cnt = 10
+    while cnt >=0:
+        day = np.random.randint(1,days+1)
+        dej = np.random.randint(1,dejs)
+        corp = np.random.randint(1,corps+1)
+        assignToDej(schedule,setup_docs,dej,day,corp)
+ #       print(np.where(schedule==1))
+        i = convDejDayCorpToFlatten(setup_docs,dej,day,corp)
+        print('День ', day)
+        
+        j = i + np.random.randint(1,nmb_neighb+1)
+        if j > days-1:
+            j=i
+        print('j+',j)
 
-    assert False == isSuitableSequence(schedule, setup_docs,0,6)
-    assert True == isSuitableSequence(schedule, setup_docs,0,1)
-    assert False == isSuitableSequence(schedule, setup_docs,0,16)
-    assert True == isSuitableSequence(schedule, setup_docs,0,30)
-    assert False == isSuitableSequence(schedule, setup_docs,0,9)
-    assert False == isSuitableSequence(schedule, setup_docs,0,31)
-    assert True == isSuitableSequence(schedule, setup_docs,2,5)
 
+        assert False == isSuitableSequence(schedule,setup_docs,j)
+
+ #       assert True == isSuitableSequence(schedule,setup_docs,j+5)
+
+
+
+ #       pdb.set_trace()
+ #       j = i - np.random.randint(1,nmb_neighb+1)
+  #      if j <= 0:
+   #         j=i
+    #    print('j-',j)
+
+
+#        assert False == isSuitableSequence(schedule,setup_docs,j)
+
+
+        assignToDej(schedule,setup_docs,dej,day,corp,0)
+
+
+
+        cnt -= 1
 
 
 
@@ -167,21 +200,13 @@ def test_isSuitableSequence(setup_docs):
  
 def test_getAmbitOne(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,1,1,1)
     assignToDej(schedule,setup_docs,0,9,1,1)
-    assignToDej(schedule,setup_docs,0,25,2,1)
+    assignToDej(schedule,setup_docs,0,30,2,1)
 
-    dejs = setup_docs.getRealDejs()
-    days = setup_docs.getDaysInMonth()
-    corps = setup_docs.getCorps()
-    nmb_max = days*corps
-    num_rows, num_cols  = dejs.shape
-    schedule = schedule.reshape(num_rows,nmb_max)
-    schedule_doc = schedule[0]
-    dej_doc = dejs.iloc[0]
-#    print(dej_doc)
-#    print(schedule_doc)
-    neighb = getAmbitOne(schedule_doc,days,2)
+    neighb = getAmbitOne(schedule,setup_docs,0,2)
+    print(neighb)
+    assert True == np.array_equal(neighb,[1,2,3,7,8,9,10,11,28,29,30])
 
 def test_isSuitableQuantity_is_more_then_4(setup_docs):
 
@@ -225,63 +250,141 @@ def test_isScheduleFull_not_full(setup_docs):
 
 
 
-@pytest.mark.skip()
-def test_isSuitableDej(setup_docs):
+pytest.mark.skip()
+def test_isSuitableDej_on_corpus(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
     assignToDej(schedule,setup_docs,0,5,1,1)
-    assignToDej(schedule,setup_docs,0,10,1,1)
-    assignToDej(schedule,setup_docs,0,15,1,1)
     assignToDej(schedule,setup_docs,0,20,1,1)
 
-    #не тот корпус
-    i = convDejDayCorpToFlatten(schedule,setup_docs,0,1,2)
-    assert False == isSuitableDej(schedule,setup_docs,0,i)
+    #не тот корпус 2
+    i = convDejDayCorpToFlatten(setup_docs,0,29,2)
+#    pdb.set_trace()
+    assert False == isSuitableDej(schedule,setup_docs,i)
+  
+    #не тот корпус 3
+    i = convDejDayCorpToFlatten(setup_docs,0,29,3)
+    assert False == isSuitableDej(schedule,setup_docs,i)
 
+    # тот корпус 1
+    i = convDejDayCorpToFlatten(setup_docs,0,29,1)
+#    pdb.set_trace()
+    assert True  == isSuitableDej(schedule,setup_docs,i)
+    
 
-    printScheduleHuman(schedule,setup_docs)
-    printScheduleHumanSum(schedule,setup_docs)
-
-
-@pytest.mark.skip()    
-def test_isFreeDay(setup_docs):
+pytest.mark.skip()
+def test_isSuitableDej_on_quantity(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
-    print(schedule[0])
-#    pdb.set_trace()
     assignToDej(schedule,setup_docs,0,5,1,1)
-    print(schedule[5])
-    assignToDej(schedule,setup_docs,9,10,1,1)
-    print(schedule[9])
-    assignToDej(schedule,setup_docs,8,15,1,1)
-    assignToDej(schedule,setup_docs,7,20,1,1)
+    assignToDej(schedule,setup_docs,0,20,1,1)
+    assignToDej(schedule,setup_docs,0,25,1,1)
 
+
+    # лишнее дежурство 
+    i = convDejDayCorpToFlatten(setup_docs,0,29,2)
 #    pdb.set_trace()
+    assert False == isSuitableDej(schedule,setup_docs,i)
 
-#    printScheduleHuman(schedule,setup_docs)
-#    printScheduleHumanSum(schedule,setup_docs)
-    assert True == isFreeDay(schedule,3)
-   # pdb.set_trace()
-    assert False  == isFreeDay(schedule,5)
-    assert False  == isFreeDay(schedule,
-            convDayCorpDejToFlatten(schedule,setup_docs,10,1,9))
-    assert False  == isFreeDay(schedule,10)
-    assert True  == isFreeDay(schedule,2)
-    assert True  == isFreeDay(schedule,11)
-  #  assert False  == isFreeDay(schedule,31)
+
+
+pytest.mark.skip()
+def test_isSuitableDej_on_sequence(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,20,1,1)
+
+
+    # смежное дежурство  
+    i = convDejDayCorpToFlatten(setup_docs,0,6,1)
+    assert False == isSuitableDej(schedule,setup_docs,i)
+
+    # смежное дежурство  с перерывом в 1 день 
+    i = convDejDayCorpToFlatten(setup_docs,0,7,1)
+    assert False == isSuitableDej(schedule,setup_docs,i)
+
+    # смежное дежурство  с перерывом в 2 дня 
+    i = convDejDayCorpToFlatten(setup_docs,0,8,1)
+    assert False == isSuitableDej(schedule,setup_docs,i)
+
+
+    # смежное дежурство  с перерывом в 3 дня 
+    i = convDejDayCorpToFlatten(setup_docs,0,9,1)
+    assert True  == isSuitableDej(schedule,setup_docs,i)
+
+pytest.mark.skip()
+def test_isSuitableDej_on_sequence_diff_corpus(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,15,1,1,1)
+    assignToDej(schedule,setup_docs,15,5,1,1)
+
+    #смежное дежурство на разных корпусах
+    i = convDejDayCorpToFlatten(setup_docs,15,2,2)
+    assert False == isSuitableDej(schedule,setup_docs,i)
+
+    #одинаковое  дежурство на разных корпусах
+    i = convDejDayCorpToFlatten(setup_docs,15,1,2)
+    assert False == isSuitableDej(schedule,setup_docs,i)
+
+
+
+
+
+
+
+pytest.mark.skip()    
+def test_isFreeDay(setup_docs):
+  
+    days = setup_docs.getDaysInMonth()
+    corps = setup_docs.getCorps()
+    dejs = setup_docs.getNmbRealDejs()
+
+        
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1)
+    assignToDej(schedule,setup_docs,0,30,1)
+    assignToDej(schedule,setup_docs,5,15,3)
+
+    i = convDejDayCorpToFlatten(setup_docs,0,1,1)
+
+    i1 = convDejDayCorpToFlatten(setup_docs,1,1,1)
+   
+    i2 = convDejDayCorpToFlatten(setup_docs,1,30,1)
+   
+    i3 = convDejDayCorpToFlatten(setup_docs,1,15,1) 
+    
+    i4 = convDejDayCorpToFlatten(setup_docs,3,15,3) 
+
+
+
+    assert False == isFreeDay(schedule,setup_docs,i) 
+
+    assert False == isFreeDay(schedule,setup_docs,i1) 
+    
+    assert True == isFreeDay(schedule,setup_docs,i3) 
+#    pdb.set_trace() 
+    assert False == isFreeDay(schedule,setup_docs,i4) 
+
+    
+
+
 
     
 def test_getDejForDoc(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
     assignToDej(schedule,setup_docs,0,5,1,1)
-    assignToDej(schedule,setup_docs,0,9,1,1)
-    assignToDej(schedule,setup_docs,5,5,2,1)
-    assignToDej(schedule,setup_docs,9,10,3,1)
-    assignToDej(schedule,setup_docs,8,15,2,1)
-    assignToDej(schedule,setup_docs,7,20,1,1)
+    assignToDej(schedule,setup_docs,0,9,3,1)
+    assignToDej(schedule,setup_docs,0,25,2,1)
+    assignToDej(schedule,setup_docs,0,20,2,1)
+    assignToDej(schedule,setup_docs,0,28,3,1)
+ #   pdb.set_trace()
+    r = getDejsForDoc(schedule,setup_docs,0)
+    print(r)
 
-    getDejsForDoc(schedule,setup_docs,0)
+    assert np.array_equal(r, np.array([1,5,50,55,69,88]) )
+
 
 
 
@@ -307,8 +410,7 @@ def test_convDejDayCorpToFlatten(setup_docs):
         corp = np.random.randint(1,corps+1)
         assignToDej(schedule,setup_docs,dej,day,corp)
  #       print(np.where(schedule==1))
-        i = convDejDayCorpToFlatten(schedule,setup_docs,
-            dej,day,corp)
+        i = convDejDayCorpToFlatten(setup_docs,dej,day,corp)
   #      print(i)
 
         assert schedule[i]==1
@@ -338,8 +440,7 @@ def test_convFlattenToDejDayCorp(setup_docs):
  #       print()
  #       print('dej,day,corp',dej,day,corp)
         assignToDej(schedule,setup_docs,dej,day,corp)
-        i = convDejDayCorpToFlatten(schedule,setup_docs,
-            dej,day,corp)
+        i = convDejDayCorpToFlatten(setup_docs,dej,day,corp)
  #       print(i,'Дежурант', convFlattenToDejDayCorp(setup_docs,i,days)[0])
 
 

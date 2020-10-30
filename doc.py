@@ -239,7 +239,7 @@ class DocSchedulingProblem:
         print("Shift Preference Violations = ", shiftPreferenceViolations)
         print()
 
-def getInitShedule(doc):
+def getInitSchedule(doc):
     """
     1 Взять случайного дежуранта из списка ✓
     2 Рассчитать среднее количество дежурств на дежуранта
@@ -252,44 +252,53 @@ def getInitShedule(doc):
     schedule = np.zeros(len(doc),dtype=np.int8)
     corps = doc.getCorps()
     days = doc.getDaysInMonth()
-    dejs = doc.getNmbRealDejs()
+    nmb_dejs = doc.getNmbRealDejs()
+    dejs = doc.getRealDejs()
     
     cnt=0
     while not isScheduleFull(schedule,doc):
         day = np.random.randint(1,days+1)
-        dej = np.random.randint(1,dejs)
+        dej = np.random.randint(0,nmb_dejs)
         corp = np.random.randint(1,corps+1)
+ #       print()
+ #       print(cnt,dejs.iloc[dej]['FAM'],day,corp)
+  #      print(getDejsForDoc(schedule,doc,dej))
        
-        i = convDejDayCorpToFlatten(schedule,doc,dej,day,corp)
+        i = convDejDayCorpToFlatten(doc,dej,day,corp)
 
         cnt+=1
 
-        if isSuitableDej(schedule, doc,dej,i):
+        if isSuitableDej(schedule, doc,i,4):
+#            print("Присваиваем: ")
+ #           print(cnt,dejs.iloc[dej]['FAM'],day,corp)
+
             assignToDej(schedule,doc,dej,day,corp)
-            printScheduleHuman(schedule,doc)
+#            print('Присвоили')
+    #        print(getDejsForDoc(schedule,doc,dej))
 
-
-        if cnt >1000:
             printScheduleHuman(schedule,doc)
             printScheduleHumanSum(schedule,doc)
+ #           pdb.set_trace()
+
+
+
+        if cnt >2000:
             break
 
-def isScheduleFull(schedule,doc):
-    len_sched = len(schedule)
-    dejs = doc.getRealDejs()
-    days = doc.getDaysInMonth()
-    corps = doc.getCorps()
-    nmb_max = days*corps
-    num_rows, num_cols  = dejs.shape
-    schedule = schedule.reshape(num_rows,nmb_max)
-#    pdb.set_trace()
-    sum = np.sum(schedule, axis=0)
-    sum =np.sum(sum)
-#    print('Свободные смены',len_sched-sum)
-    if sum >= len_sched:
-        return True
+ #       input()
+    printScheduleHuman(schedule,doc)
+    printScheduleHumanSum(schedule,doc)
 
-    return False
+
+
+def isScheduleFull(schedule,doc):
+    shifts = np.sum(schedule)
+    shifts_max = doc.getCorps()*doc.getDaysInMonth()
+#    print('Shifts ',shifts)
+    if shifts < shifts_max:
+        return False
+    else:
+        return True
   
 
 
@@ -317,7 +326,7 @@ def getFreeDejFromSchedule(schedule,days_in_month,nmb_corps):
     #равна нулю (свободные дежурства) с учетом корпусов
     return np.where(sum==0)
 
-def isSuitableDej(schedule, doc, dej_index, day):
+def isSuitableDej(schedule, doc, sched_day,max_nmb_dej):
     """
     определяет, можно ли поставить день day в
     расписание shedule
@@ -330,55 +339,58 @@ def isSuitableDej(schedule, doc, dej_index, day):
 
     """
 #    pdb.set_trace()
-    conv_day,corpus = convDayToDayAndCorp(day,doc.getDaysInMonth())
-    max_nmb_dej = 4 
+    days = doc.getDaysInMonth()
+    
+    dej,day,corpus = convFlattenToDejDayCorp(doc,sched_day,days)
     dejs = doc.getRealDejs()
 #    pdb.set_trace()
 #    doc_dej = dejs[dej_index]
 #    print(doc_dej
     
-    if not isFreeDay(schedule,day):
+#    pdb.set_trace()
+    
+    if not isFreeDay(schedule,doc,sched_day):
  #       print("isFreeDay false")
         return False
     
 
 
-    if not isSuitableCorpus(doc,dej_index,day):
+    if not isSuitableCorpus(doc,dej,sched_day):
 #        print("Не походит корпус")
         return False
 
    
-    if not isSuitableQuantity(schedule,doc,dej_index,
+    if not isSuitableQuantity(schedule,doc,dej,
             max_nmb_dej):
 #        print("Не походит количество")
         return False
 
 
-    if not isSuitableSequence(schedule, doc, dej_index, conv_day):
+    if not isSuitableSequence(schedule, doc, sched_day):
 #        print("Не походит последовательность")
         return False
+#    print("Все подходит!")
 
     return True
 
 
-def isSuitableSequence(schedule, doc, dej_index, day):
+def isSuitableSequence(schedule, doc, sched_day):
 
     dejs = doc.getRealDejs()
     days = doc.getDaysInMonth()
-    corps = doc.getCorps()
-    nmb_max = days*corps
-    num_rows, num_cols  = dejs.shape
-    schedule = schedule.reshape(num_rows,nmb_max)
-    schedule_doc = schedule[dej_index]
-    dej_doc = dejs.iloc[dej_index]
+    dej,day,corp =  convFlattenToDejDayCorp(doc,sched_day,days)
+    len_sched = len(schedule)
 
-    days_busy = getAmbitOne(schedule_doc,days,2)
-    days_busy = (x+1 for x in days_busy)
-
+#    pdb.set_trace()
+#    days_busy = getDejsForDoc(schedule,doc,dej)
+    days_busy = getAmbitOne(schedule,doc,dej,3)
+#    print(days_busy)
+    
     if day in days_busy:
+  #      pdb.set_trace()
         return False
-    if day > days:
-        return False
+    if day > len_sched :
+        return False    
 
     return True
 
@@ -401,46 +413,35 @@ def isSuitableQuantity(schedule, doc, dej_index, max_nmb_dej):
     return False
 
 def isSuitableCorpus(doc, dej_index, day):
+ #   pdb.set_trace()
 
     df = doc.getRealDejs()
     dej_corp  = df.iloc[dej_index]['CORPUS']
     days = doc.getDaysInMonth()
     nmb_corps = doc.getCorps()
-    possible_corpus = getNmbCorpusFrom1d(day,days,nmb_corps)
+    possible_corpus = convFlattenToDejDayCorp(doc,day,days)[2] 
+#    pdb.set_trace()
     return isCorpRight(dej_corp,possible_corpus) 
+def isFreeDay(schedule,doc,sched_day):
 
-def isFreeDayOld(schedule,doc,day):
-    dejs = doc.getRealDejs()    
     days = doc.getDaysInMonth()
     corps = doc.getCorps()
-    nmb_max = days*corps
-    num_rows, num_cols  = dejs.shape
-    schedule = schedule.reshape(num_rows,nmb_max)
-
+    dejs = doc.getNmbRealDejs()
 #    pdb.set_trace()
+    schedule2d = schedule.reshape(dejs,corps*days)
+    schedule2d_sum = np.sum(schedule2d,axis=0)
+    free_days = np.where(schedule2d_sum==0)[0]
+    free_days =np.fromiter((x+1 for x in free_days),int)
+    d = sched_day%(corps*days)+1
 
-    schedule_sum = np.sum(schedule, axis=0)
-#    print('day',day)
-#    print(schedule_sum)
- #   print(schedule_sum[day-1])
-
-    if schedule_sum[day-1]==0:
- #       print('True')
-
-        return True
-    else:
-#        print('False')
-        return False
-
-
-    return Truei
-
-def isFreeDay(schedule,day):
    # pdb.set_trace()
-    if schedule[day-1]==1:
+    if d in free_days: 
+  #      print('Is free day')
+  #      pdb.set_trace()
+        return True 
+    else:       
+   #     print('Not is free day')
         return False
-    else:
-        return True
 
 def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
     """
@@ -477,92 +478,11 @@ def assignToDej(schedule, doc, dej_index, day,corpus, flag=1):
 
     schedule = schedule.reshape(nmb_dej_doc, days*nmb_corps)
 
+        
+
     schedule[dej_index][(corpus-1)*days + day - 1] = flag
 
     return schedule.flatten()
-
-def printScheduleHumanOld(schedule, doc):
-    """
-    Выводит расписание в нужном конечном формате
-    :schedule ДНК расписания, двоичный 1d массив
-    :doc - объект DocSchedulingProblem
-    :return требуемая таблица
-    """
-
-    corps = doc.getCorps()
-    days = doc.getDaysInMonth()
-    fam = doc.getRealDejs()['FAM']
-
-    # формируем столбик из дежурантов,
-    # попутно добавляем к фамилии И О
-    i = doc.getRealDejs()['NAME']
-    o = doc.getRealDejs()['SURNAME']
-    dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
-    dejs = dejs.reshape((-1,1))
-#    pdb.set_trace()
-    # преобразуем ДНК в двумерный массив
-    schedule = schedule.reshape((len(dejs),
-        int(len(schedule)/len(dejs))))
-
-    # цепляем слева столбец с ФИО дежурантов
-    schedule = np.hstack((dejs,schedule))
-
-    # можно сделать максимальный вывод таблицы без сокращений
-    np.set_printoptions(threshold=sys.maxsize)
-
-    # ищем в расписании единицы и получаем массивы координат
-    #pdb.set_trace()
-    is_one = np.where(schedule==1) 
-
-    # начинаем формировать конечную матрицу
-    # dtype object позволяет работать со строками
-    hum = np.empty((days,3),dtype='object')
-    
-    # формируем массив дат для конечной таблицы
-    dates = np.arange(np.datetime64(dt.date(doc.getYear(),
-        doc.getMonth(),1)),days)
-    # преобразуем его в столбец
-    dates = dates.reshape(-1,1)
-
-    # цепляем столбец с датами слева, попутно преобразуя
-    # его в строку
-    schedule_with_date = np.hstack(((dates.astype('str')),
-        hum))
-
-    # nditer позволяет итерировать двумерный массив
-    # переносим данные в конечную таблицу,
-    # попутно заполняя текстовые поля пробеллами
-    # справа до 12
- #   pdb.set_trace()
-    for a in np.nditer(is_one):
-#        print()
- #       print('a',a)
-        ind_data = getDateFrom1d(a[1]-1,days,corps)
-        #ограничение на выход за верхнюю границу массива
-#        if ind_data == days:
- #           return
-
-        ind_corpus = getNmbCorpusFrom1d(a[1],days,corps)
-  #      print('ind_data',ind_data)
-   #     print('ind_corpus',ind_corpus)
-    #    print('schedule_with_date shape',
-     #           schedule_with_date.shape)
-      #  print('is_one',is_one)
-
-      #  print('schedule_with_date[ind_data][ind_corpus]',
-       #         schedule_with_date[ind_data][ind_corpus]  )
-        if ind_data < days:
-            schedule_with_date[ind_data][ind_corpus] = schedule[a[0]][0].ljust(17)
-   
-    df = pd.DataFrame(schedule_with_date)
-    print()
-    print("Расписание дежурств УЗ 'МООД'")
-    print("Месяц ",doc.getMonth())
-    print(df)
-    print('Свободных смен - ',np.sum(pd.isnull(schedule_with_date)))
-
-#    pdb.set_trace()
-    return schedule_with_date
 
 def printScheduleHuman(schedule, doc):
     """
@@ -617,10 +537,16 @@ def printScheduleHuman(schedule, doc):
     # попутно заполняя текстовые поля пробеллами
     # справа до 12
 #    pdb.set_trace()
-    it0 = np.nditer(is_one,flags=["multi_index"])
+    try:
+        it0 = np.nditer(is_one,flags=["multi_index"])
+    except ValueError:
+        print("printScheduleHuman передан пустой массив")
+        return 0
+
     for y in it0:
   #      print()
- #       print(y,it0.multi_index)
+    
+       # print(y,it0.multi_index)
 
         dd = getDateFrom1d(y[1]-1,days,corps)
  #       print('Дата',dd)
@@ -642,16 +568,17 @@ def printScheduleHuman(schedule, doc):
   #     print(i, getDateFrom1d(i,30,3),getNmbCorpusFrom1d(i,30,3))
 
     df = pd.DataFrame(schedule_with_date,columns=['Дата','2_корпус','1_корпус','Хоспис'])   
-    for i, j in df.iterrows():
-        print(i,j[0],j[1],j[2],j[3])
-    print()
+#    for i, j in df.iterrows():
+ #       print(i,j[0],j[1],j[2],j[3])
+  #  print()
     print("Расписание дежурств УЗ 'МООД'")
     print("Месяц ",doc.getMonth())
     print(df.to_string(index=False))
-    print('Свободных смен - ',np.sum(pd.isnull(schedule_with_date)))
+    free_shifts = np.sum(pd.isnull(schedule_with_date))
+    print('Свободных смен - ',free_shifts)
 
 #    pdb.set_trace()
-    return schedule_with_date
+    return schedule_with_date,free_shifts
 
 
 def printScheduleHumanSum(schedule, doc):
@@ -676,9 +603,13 @@ def printScheduleHumanSum(schedule, doc):
     # преобразуем ДНК в двумерный массив
     schedule2d = schedule.reshape((len(dejs),
         int(len(schedule)/len(dejs))))
- #   pdb.set_trace()
+#    pdb.set_trace()
+    
     schedule_2d_sum = np.sum(schedule2d,axis=1)
+    schedule2d_days = np.where(schedule2d==1)
+#    pdb.set_trace()
     schedule_2d_sum = schedule_2d_sum.reshape((-1,1))
+    all_sum = np.sum(schedule_2d_sum)
  #   pdb.set_trace()
 
     # цепляем слева столбец с ФИО дежурантов
@@ -687,7 +618,10 @@ def printScheduleHumanSum(schedule, doc):
 
     # можно сделать максимальный вывод таблицы без сокращений
     np.set_printoptions(threshold=sys.maxsize)
-    print(schedule_2d_sum_with_dejs)
+#    print(schedule_2d_sum_with_dejs)
+    free_shifts = days*corps-all_sum
+    print('Свободных смен ',free_shifts)
+    return free_shifts
 
 #    pdb.set_trace()
 
@@ -698,12 +632,13 @@ def getDejsForDoc(schedule, doc, dej_index):
     nmb_max = days*corps
     num_rows, num_cols  = dejs.shape
     schedule = schedule.reshape(num_rows,nmb_max)
-    dd = np.where(schedule[dej_index]==1)
+#    pdb.set_trace()
+    dd = np.where(schedule[dej_index]==1)[0]
     dd = (i + 1  for i in dd)
-    for i in dd:
-        print(i)
+    #генерация numpy array from generator expression
+    dd = np.fromiter(dd,int)
 
-    return
+    return dd 
 
 
 
@@ -738,6 +673,9 @@ def getDateFrom1d(nmb,nmb_days_in_month,nmb_corps):
         return nmb % nmb_days_in_month
 
 def isCorpRight(dej_corp,possible_corpus):
+    if possible_corpus not in (1,2,3):
+        print('Неправильный номер корпуса -',possible_corpus)
+        return False
     if dej_corp==1 and possible_corpus==3:
         return True
     if dej_corp==10 and possible_corpus==2:
@@ -755,10 +693,10 @@ def isCorpRight(dej_corp,possible_corpus):
 
     return False   
 
-def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
+def getAmbitOne(schedule,doc,dej,nmb_neighb,dej_before=0):
     """
     получить двоичный массив единиц дежурств с окрестностями
-    :schedule исходный двоичный массив
+    :schedule исходный двоичный массив для одного дежуранта
     :дней в месяце
     :nmb_neighb число соседей с одной стороны,
         определяет размеры окрестности
@@ -766,17 +704,25 @@ def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
         предыдущего месяца
     :return требуемый массив
     """
-#    pdb.set_trace()    
-    x = len(schedule)
+    dejs = doc.getRealDejs()    
+    days = doc.getDaysInMonth()
+    corps = doc.getCorps()
+    nmb_max = days*corps
+    num_rows, num_cols  = dejs.shape
+    schedule = schedule.reshape(num_rows,nmb_max)
+    schedule_doc = schedule[dej]
+
+ #   pdb.set_trace()    
+    x = len(schedule_doc)
+
     #количество корпусов
- 
     rows  = int(x/days)
+
     #выстраиваем корпуса в столбик
- 
-    schedule = schedule.reshape(rows, days)
+    schedule_doc = schedule_doc.reshape(rows, days)
 
     #суммируем единицы по столбцам и получаем дни дежурств
-    sum_schedule = np.sum(schedule,axis=0)
+    sum_schedule = np.sum(schedule_doc,axis=0)
 #    print('In gAO sum_schedule:',sum_schedule)
     
     #получаем индексы дней дежурств
@@ -787,12 +733,12 @@ def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
     #получаем укaзатели соседних дней, когда нельзя
     #ставить дежурства 
     for i in ind[0]:
-        p = np.arange(i-nmb_neighb,i+nmb_neighb + 1)
+        p = np.arange(i-nmb_neighb+1,i+nmb_neighb+2)
         un = np.append(un,p)
 #    print('Индексы единиц с соседями: ',un)
    
    #убираем повторы и отсекаем края
-    ret = (x for x in np.unique(un) if x>=0 and x <days)
+    ret = (x for x in np.unique(un) if x>0 and x<=days)
     ret = np.fromiter(ret, int)
 #    print('Индексы без повторов и краев: ',ret)
 #    pdb.set_trace()
@@ -807,22 +753,22 @@ def getAmbitOne(schedule,days,nmb_neighb,dej_before=0):
 
     return ret
 
-def convFlattenToDejDayCorp(doc,day,days):
+def convFlattenToDejDayCorp(doc,sched_day,days):
     """
     определяет по индексу в schedule дежуранта,день и корпус
     """
     corps = doc.getCorps()
     dejs = doc.getNmbRealDejs()
-    mod = day//days
-    div = day%days
+    mod = sched_day//days
+    div = sched_day%days
 
     if div==0:
-        return (day//(days*corps),1,mod%corps+1)
+        return (sched_day//(days*corps),1,mod%corps+1)
     else:
-        return (day//(days*corps),div+1,mod%corps+1)
+        return (sched_day//(days*corps),div+1,mod%corps+1)
 
 
-def convDejDayCorpToFlatten(schedule,doc,dej,day,corp):
+def convDejDayCorpToFlatten(doc,dej,day,corp):
     days = doc.getDaysInMonth()
     corps = doc.getCorps()
     dejs = doc.getNmbRealDejs()
@@ -849,7 +795,7 @@ def main():
     doc.printScheduleInfo(randomSolution)
  
     print("Total Cost = ", doc.getCost(randomSolution))
- 
+
  
 if __name__ == "__main__":
     main()
