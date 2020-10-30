@@ -255,12 +255,16 @@ def getInitSchedule(doc):
     nmb_dejs = doc.getNmbRealDejs()
     dejs = doc.getRealDejs()
     sched_90 = np.arange(1,corps*days+1)
+    sched_dejs = np.arange(0,nmb_dejs )
+    max_nmb_dej = 4
     
     cnt=0
     while not isScheduleFull(schedule,doc):
         
         dej = np.random.randint(0,nmb_dejs)
         d = np.random.choice(sched_90)
+        dej = np.random.choice(sched_dejs)
+#        print('Индекс дежуранта',dej)
 
         if d%days == 0:
             day = days
@@ -282,22 +286,31 @@ def getInitSchedule(doc):
         i = convDejDayCorpToFlatten(doc,dej,day,corp)   
 
         cnt+=1
-        print(cnt)
+  #      print(cnt)
    #     print(sched_90)
 
-        if isSuitableDej(schedule, doc,i,4):
+        if isSuitableDej(schedule, doc,i,max_nmb_dej):
 #            print("Присваиваем: ")
  #           print(cnt,dejs.iloc[dej]['FAM'],day,corp)
 
             assignToDej(schedule,doc,dej,day,corp)
  #           pdb.set_trace()
  #           print(sched_90)
-            print('День ',d)
+  #          print('День ',d)
             i, = np.where(sched_90==d)
 
             sched_90 = np.delete(sched_90,i)
             print('after delete',sched_90)
  #           input()
+            if not isSuitableQuantity(schedule,doc,dej,max_nmb_dej):
+      #          pdb.set_trace()
+ #               print(cnt,dejs.iloc[dej]['FAM'],day,corp)
+ #               print(getDejsForDoc(schedule,doc,dej))
+                j, = np.where(sched_dejs==dej)
+                sched_dejs = np.delete(sched_dejs,j)
+
+
+      #          input()
 #            print('Присвоили')
     #        print(getDejsForDoc(schedule,doc,dej))
 
