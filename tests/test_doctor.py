@@ -260,16 +260,12 @@ def test_isSuitableDej_on_corpus(setup_docs):
     #не тот корпус 2
     i = convDejDayCorpToFlatten(setup_docs,0,29,2)
 #    pdb.set_trace()
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,4)
   
     #не тот корпус 3
     i = convDejDayCorpToFlatten(setup_docs,0,29,3)
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
-    # тот корпус 1
-    i = convDejDayCorpToFlatten(setup_docs,0,29,1)
-#    pdb.set_trace()
-    assert True  == isSuitableDej(schedule,setup_docs,i)
     
 
 pytest.mark.skip()
@@ -284,7 +280,7 @@ def test_isSuitableDej_on_quantity(setup_docs):
     # лишнее дежурство 
     i = convDejDayCorpToFlatten(setup_docs,0,29,2)
 #    pdb.set_trace()
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
 
 
@@ -298,20 +294,16 @@ def test_isSuitableDej_on_sequence(setup_docs):
 
     # смежное дежурство  
     i = convDejDayCorpToFlatten(setup_docs,0,6,1)
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
     # смежное дежурство  с перерывом в 1 день 
     i = convDejDayCorpToFlatten(setup_docs,0,7,1)
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
     # смежное дежурство  с перерывом в 2 дня 
     i = convDejDayCorpToFlatten(setup_docs,0,8,1)
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
-
-    # смежное дежурство  с перерывом в 3 дня 
-    i = convDejDayCorpToFlatten(setup_docs,0,9,1)
-    assert True  == isSuitableDej(schedule,setup_docs,i)
 
 pytest.mark.skip()
 def test_isSuitableDej_on_sequence_diff_corpus(setup_docs):
@@ -321,11 +313,11 @@ def test_isSuitableDej_on_sequence_diff_corpus(setup_docs):
 
     #смежное дежурство на разных корпусах
     i = convDejDayCorpToFlatten(setup_docs,15,2,2)
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
     #одинаковое  дежурство на разных корпусах
     i = convDejDayCorpToFlatten(setup_docs,15,1,2)
-    assert False == isSuitableDej(schedule,setup_docs,i)
+    assert False == isSuitableDej(schedule,setup_docs,i,3)
 
 
 
