@@ -202,11 +202,33 @@ def test_getAmbitOne(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
     assignToDej(schedule,setup_docs,0,1,1,1)
     assignToDej(schedule,setup_docs,0,9,1,1)
-    assignToDej(schedule,setup_docs,0,30,2,1)
+    assignToDej(schedule,setup_docs,0,25,2,1)
 
     neighb = getAmbitOne(schedule,setup_docs,0,2)
     print(neighb)
-    assert True == np.array_equal(neighb,[1,2,3,7,8,9,10,11,28,29,30])
+    assert True == np.array_equal(neighb,[1,2,3,7,8,9,10,11,23,24,25,26,27])
+
+def test_getAmbitOne_right_margin(setup_docs):
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    days_in_month = setup_docs.getDaysInMonth()
+    nmb_neighb = 2
+    i = 29
+    max_int = nmb_neighb*2+1
+    min_margin = i - nmb_neighb
+    max_margin = min_margin + max_int
+    if max_margin > days_in_month:
+        max_margin = days_in_month
+
+    ar = np.arange(min_margin,max_margin+1)
+
+    assignToDej(schedule,setup_docs,0,29,1,1)
+
+    neighb = getAmbitOne(schedule,setup_docs,0,nmb_neighb)
+    print(ar)
+    print(neighb)
+
+    assert True == np.array_equal(neighb,ar)
+
 
 def test_isSuitableQuantity_is_more_then_4(setup_docs):
 
@@ -365,17 +387,23 @@ def test_isFreeDay(setup_docs):
     
 def test_getDejForDoc(setup_docs):
     schedule = np.zeros(len(setup_docs),dtype=np.int8)
-    assignToDej(schedule,setup_docs,0,1,1,1)
-    assignToDej(schedule,setup_docs,0,5,1,1)
-    assignToDej(schedule,setup_docs,0,9,3,1)
-    assignToDej(schedule,setup_docs,0,25,2,1)
-    assignToDej(schedule,setup_docs,0,20,2,1)
-    assignToDej(schedule,setup_docs,0,28,3,1)
- #   pdb.set_trace()
+    ar = np.array([[1,1],[5,1],[9,3],[25,2],[20,2],[28,3]])
+    ir = np.empty(0,dtype=int)
+    for i in ar:
+        assignToDej(schedule,setup_docs,0,i[0],i[1],1)
+        ir = np.append(ir,convDejDayCorpToFlatten(setup_docs,
+            0,i[0],i[1])+1)
+    
+
+
     r = getDejsForDoc(schedule,setup_docs,0)
+    ir = np.sort(ir)
+    r = np.sort(r)
+    print(ir)
     print(r)
 
-    assert np.array_equal(r, np.array([1,5,50,55,69,88]) )
+
+    assert True == np.array_equal(r,ir)
 
 
 

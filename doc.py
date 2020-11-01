@@ -584,7 +584,7 @@ def getDejsForDoc(schedule, doc, dej_index):
     dd = (i + 1  for i in dd)
     #генерация numpy array from generator expression
     dd = np.fromiter(dd,int)
-
+#    pdb.set_trace()
     return dd 
 
 
@@ -710,7 +710,7 @@ def convDejDayCorpToFlatten(doc,dej,day,corp):
     corps = doc.getCorps()
     dejs = doc.getNmbRealDejs()
    
-    return dej*days*corps +(corp-1)*days + day-1
+    return int(dej*days*corps +(corp-1)*days + day-1)
 
 
 
