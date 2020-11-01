@@ -31,6 +31,7 @@ class DocSchedulingProblem:
  
         # max shifts per week allowed for each doc
         self.maxShiftsPerWeek = 5
+        self.maxSchiftPerMonth = 5
  
         # number of weeks we create a schedule for:
         self.weeks = 1
@@ -100,7 +101,7 @@ class DocSchedulingProblem:
  
         # count the various violations:
         consecutiveShiftViolations = self.countConsecutiveShiftViolations(docShiftsDict)
-        shiftsPerWeekViolations = self.countShiftsPerWeekViolations(docShiftsDict)[1]
+        shiftsPerMonthViolations = self.countShiftsPerMonthViolations(docShiftsDict)[1]
         docPerShiftViolations = self.countDocsPerShiftViolations(docShiftsDict)[1]
         shiftPreferenceViolations = self.countShiftPreferenceViolations(docShiftsDict)
  
@@ -146,7 +147,7 @@ class DocSchedulingProblem:
                     violations += 1
         return violations
  
-    def countShiftsPerWeekViolations(self, docShiftsDict):
+    def countShiftsPerMonthViolations(self, docShiftsDict):
         """
         Counts the max-shifts-per-week violations in the schedule
         Считает количество смен в неделю и штрафует при превышении
@@ -223,7 +224,7 @@ class DocSchedulingProblem:
         print("consecutive shift violations = ", self.countConsecutiveShiftViolations(docShiftsDict))
         print()
  
-        weeklyShiftsList, violations = self.countShiftsPerWeekViolations(docShiftsDict)
+        weeklyShiftsList, violations = self.countShiftsPerMonthViolations(docShiftsDict)
         print("weekly Shifts = ", weeklyShiftsList)
         print("Shifts Per Week Violations = ", violations)
         print()
@@ -548,19 +549,24 @@ def printScheduleHumanSum(schedule, doc):
     docShiftsDict = {}
     days = doc.getDaysInMonth()
     shiftIndex = 0
+    sched_sum = 0
 
     for d in docs_dej:
         ar =  np.where(schedule[shiftIndex:shiftIndex 
             + shiftsPerDoc]==1)[0]
         ar = np.fromiter((convFlattenToDejDayCorp(doc,
             i,days)[1] for i in ar),dtype=int)
-    
-        docShiftsDict[d] = ar,np.sum(
+        sch_s = np.sum(
                 schedule[shiftIndex:shiftIndex + shiftsPerDoc])
+    
+        docShiftsDict[d] = ar, sch_s
         shiftIndex += shiftsPerDoc
+        sched_sum += sch_s
+
     for d in docShiftsDict: 
         print(f'{d : <22}  {docShiftsDict[d][1] : ^5}'
               f'{docShiftsDict[d][0] }')
+    print(f'Занято {sched_sum} смен')
 
 
 

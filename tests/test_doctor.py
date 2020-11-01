@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import pytest
 from doc import * 
 import numpy as np
@@ -25,7 +28,7 @@ def test_random_solution(setup_docs):
  #   print("Total Cost randomSolution = ",setup_docs.getCost(randomSolution))
  
 
-pytest.mark.skip()
+@pytest.mark.skip()
 def test_getInitSchedule(setup_docs):
     start_time = time.time()
     print(time.time())
@@ -466,10 +469,10 @@ def test_convFlattenToDejDayCorp(setup_docs):
         assert corp == convFlattenToDejDayCorp(setup_docs,i, days)[2]
         cnt -= 1
 
-def test_DSP_getDocShifts(setup_docs):
+def test_printScheduleHumanSum(setup_docs):
     init = getInitSchedule(setup_docs)
   #  pdb.set_trace()
-    setup_docs.printScheduleInfo(init)
+    printScheduleHumanSum(init, setup_docs)
     """
     names = ['Raj', 'Shivam', 'Shreeya', 'Kartik']
     marks = [7, 9, 8, 5]
