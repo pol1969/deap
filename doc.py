@@ -117,12 +117,10 @@ class DocSchedulingProblem:
         :param schedule: a list of binary values describing the given schedule
         :return: a dictionary with each doc as a key and the corresponding shifts as the value
         """
- #       shiftsPerDoc = self.__len__() // len(self.realDejs)
         shiftsPerDoc = self.corps*self.days_in_month
 
         docShiftsDict = {}
         shiftIndex = 0
-        #import pdb; pdb.set_trace()
  
         for doc in self.docs_dej:
             docShiftsDict[doc] = schedule[shiftIndex:shiftIndex + shiftsPerDoc]
@@ -274,7 +272,8 @@ def getInitSchedule(doc):
             i, = np.where(sched_90==d)
 
             sched_90 = np.delete(sched_90,i)
-            print('after delete',sched_90)
+#            print('after delete',sched_90)
+            print(len(sched_90)*'+')
             if not isSuitableQuantity(schedule,doc,dej,max_nmb_dej):
                 j, = np.where(sched_dejs==dej)
                 sched_dejs = np.delete(sched_dejs,j)
@@ -285,6 +284,8 @@ def getInitSchedule(doc):
 
     printScheduleHuman(schedule,doc)
     printScheduleHumanSum(schedule,doc)
+
+    return schedule
 
 
 
@@ -541,36 +542,27 @@ def printScheduleHumanSum(schedule, doc):
     :return требуемая таблица
     """
 
-    corps = doc.getCorps()
+    shiftsPerDoc = doc.getCorps()*doc.getDaysInMonth()
+    docs_dej = doc.docs_dej
+
+    docShiftsDict = {}
     days = doc.getDaysInMonth()
-    fam = doc.getRealDejs()['FAM']
+    shiftIndex = 0
 
-    # формируем столбик из дежурантов,
-    # попутно добавляем к фамилии И О
-    i = doc.getRealDejs()['NAME']
-    o = doc.getRealDejs()['SURNAME']
-    dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
-    dejs = dejs.reshape((-1,1))
-
-    # преобразуем ДНК в двумерный массив
-    schedule2d = schedule.reshape((len(dejs),
-        int(len(schedule)/len(dejs))))
+    for d in docs_dej:
+        ar =  np.where(schedule[shiftIndex:shiftIndex 
+            + shiftsPerDoc]==1)[0]
+        ar = np.fromiter((convFlattenToDejDayCorp(doc,
+            i,days)[1] for i in ar),dtype=int)
     
-    schedule_2d_sum = np.sum(schedule2d,axis=1)
-    schedule2d_days = np.where(schedule2d==1)
-    schedule_2d_sum = schedule_2d_sum.reshape((-1,1))
-    all_sum = np.sum(schedule_2d_sum)
+        docShiftsDict[d] = ar,np.sum(
+                schedule[shiftIndex:shiftIndex + shiftsPerDoc])
+        shiftIndex += shiftsPerDoc
+    for d in docShiftsDict: 
+        print(f'{d : <22}  {docShiftsDict[d][1] : ^5}'
+              f'{docShiftsDict[d][0] }')
 
-    # цепляем слева столбец с ФИО дежурантов
-    schedule_2d_sum_with_dejs = np.hstack((dejs,
-        schedule_2d_sum))
 
-    # можно сделать максимальный вывод таблицы без сокращений
-    np.set_printoptions(threshold=sys.maxsize)
-    print(schedule_2d_sum_with_dejs)
-    free_shifts = days*corps-all_sum
-    print('Свободных смен ',free_shifts)
-    return free_shifts
 
 
 def getDejsForDoc(schedule, doc, dej_index):
@@ -710,7 +702,7 @@ def convDejDayCorpToFlatten(doc,dej,day,corp):
     corps = doc.getCorps()
     dejs = doc.getNmbRealDejs()
    
-    return int(dej*days*corps +(corp-1)*days + day-1)
+    return dej*days*corps +(corp-1)*days + day-1
 
 
 

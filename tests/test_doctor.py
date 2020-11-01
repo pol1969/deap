@@ -31,6 +31,7 @@ def test_getInitSchedule(setup_docs):
     print(time.time())
     myInitSolution = getInitSchedule(setup_docs)
     print('Время выполнения,сек - ', time.time()-start_time)
+    return myInitSolution
 
 #    print("My Init Solution= ")
 #    print(myInitSolution)
@@ -457,23 +458,30 @@ def test_convFlattenToDejDayCorp(setup_docs):
         day = np.random.randint(1,days+1)
         dej = np.random.randint(1,dejs)
         corp = np.random.randint(1,corps+1)
- #       print()
- #       print('dej,day,corp',dej,day,corp)
         assignToDej(schedule,setup_docs,dej,day,corp)
         i = convDejDayCorpToFlatten(setup_docs,dej,day,corp)
- #       print(i,'Дежурант', convFlattenToDejDayCorp(setup_docs,i,days)[0])
-
-
- #       print(i,'День', convFlattenToDejDayCorp(setup_docs,i,days)[1])
- #       print(i,'Корпус', convFlattenToDejDayCorp(setup_docs,i,days)[2])
         assert dej == convFlattenToDejDayCorp(setup_docs,i,days)[0]
 
         assert day == convFlattenToDejDayCorp(setup_docs,i,days)[1]
         assert corp == convFlattenToDejDayCorp(setup_docs,i, days)[2]
         cnt -= 1
 
+def test_DSP_getDocShifts(setup_docs):
+    init = getInitSchedule(setup_docs)
+  #  pdb.set_trace()
+    setup_docs.printScheduleInfo(init)
+    """
+    names = ['Raj', 'Shivam', 'Shreeya', 'Kartik']
+    marks = [7, 9, 8, 5]
+    div = ['A', 'A', 'C', 'B']
+    id = [21, 52, 27, 38]
+    print()
+    print(f"{'Name' : <10}{'Marks' : ^10}{'Division' : ^10}{'ID' : >5}")
 
+    for i in range(0,4):
+        print(f"{names[i] : <10}{marks[i] : ^10}{div[i] : ^10}{id[i] : >5}") 
 
+    """
 
 
 
