@@ -12,6 +12,7 @@ import seaborn as sns
 import elitism
 import doc
 import datetime as dt
+from doc import *
  
 # problem constants:
 HARD_CONSTRAINT_PENALTY = 10  # the penalty factor for a hard-constraint violation
@@ -43,9 +44,14 @@ creator.create("Individual", list, fitness=creator.FitnessMin)
  
 # create an operator that randomly returns 0 or 1:
 toolbox.register("zeroOrOne", random.randint, 0, 1)
+
+toolbox.register("myInit",getInitSchedule,nsp)
+
+
  
 # create the individual operator to fill up an Individual instance:
-toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.zeroOrOne, len(nsp))
+#toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.zeroOrOne, len(nsp))
+toolbox.register("individualCreator", tools.initRepeat, creator.Individual, toolbox.myInit, len(nsp))
  
 # create the population operator to generate a list of individuals:
 toolbox.register("populationCreator", tools.initRepeat, list, toolbox.individualCreator)

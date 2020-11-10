@@ -468,23 +468,42 @@ def test_convFlattenToDejDayCorp(setup_docs):
         assert day == convFlattenToDejDayCorp(setup_docs,i,days)[1]
         assert corp == convFlattenToDejDayCorp(setup_docs,i, days)[2]
         cnt -= 1
-
+@pytest.mark.skip()
 def test_printScheduleHumanSum(setup_docs):
     init = getInitSchedule(setup_docs)
   #  pdb.set_trace()
     printScheduleHumanSum(init, setup_docs)
-    """
-    names = ['Raj', 'Shivam', 'Shreeya', 'Kartik']
-    marks = [7, 9, 8, 5]
-    div = ['A', 'A', 'C', 'B']
-    id = [21, 52, 27, 38]
-    print()
-    print(f"{'Name' : <10}{'Marks' : ^10}{'Division' : ^10}{'ID' : >5}")
 
-    for i in range(0,4):
-        print(f"{names[i] : <10}{marks[i] : ^10}{div[i] : ^10}{id[i] : >5}") 
+def test_DSP_countShiftsPerMonthViolations(setup_docs):
+ #   schedule =  getInitSchedule(setup_docs)
+#    schedule = np.random.randint(2,size = len(setup_docs))
+    schedule = np.zeros(len(setup_docs),dtype=np.int8)
+    assignToDej(schedule,setup_docs,0,1,1,1)
+    assignToDej(schedule,setup_docs,0,5,1,1)
+    assignToDej(schedule,setup_docs,0,20,1,1)
+    assignToDej(schedule,setup_docs,5,1,2,1)
+    assignToDej(schedule,setup_docs,5,5,2,1)
+    assignToDej(schedule,setup_docs,5,20,2,1)
+    assignToDej(schedule,setup_docs,5,27,2,1)
+    assignToDej(schedule,setup_docs,5,15,2,1)
+    assignToDej(schedule,setup_docs,5,29,2,1)
 
-    """
+
+
+    printScheduleHumanSum(schedule, setup_docs)
+
+    dic = setup_docs.getDocShifts(schedule)
+#    pdb.set_trace()
+    monthShiftsLists, violations = setup_docs.countShiftsPerMonthViolations(dic)
+    print(monthShiftsLists)
+    print(violations)
+
+def test_bin():
+    for i in np.arange (0,30):
+
+        print(i, bin(i)[2:])
+    
+
 
 
 

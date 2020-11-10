@@ -31,7 +31,7 @@ class DocSchedulingProblem:
  
         # max shifts per week allowed for each doc
         self.maxShiftsPerWeek = 5
-        self.maxSchiftPerMonth = 5
+        self.maxShiftsPerMonth = 4
  
         # number of weeks we create a schedule for:
         self.weeks = 1
@@ -106,7 +106,8 @@ class DocSchedulingProblem:
         shiftPreferenceViolations = self.countShiftPreferenceViolations(docShiftsDict)
  
         # calculate the cost of the violations:
-        hardContstraintViolations = consecutiveShiftViolations+docPerShiftViolations + shiftsPerWeekViolations
+   #     hardContstraintViolations = consecutiveShiftViolations+docPerShiftViolations + shiftsPerMonthViolations
+        hardContstraintViolations = shiftsPerMonthViolations
 
         softContstraintViolations = shiftPreferenceViolations
  
@@ -155,19 +156,19 @@ class DocSchedulingProblem:
         :return: count of violations found
         """
         violations = 0
-        weeklyShiftsList = []
+        monthShiftsList = []
         # iterate over the shifts of each doc:
         for docShifts in docShiftsDict.values():  # all shifts of a single doc
             # iterate over the shifts of each weeks:
             for i in range(0, self.weeks * self.shiftsPerWeek, self.shiftsPerWeek):
                 # count all the '1's over the week:
-   #             import pdb; pdb.set_trace()
-                weeklyShifts = sum(docShifts[i:i + self.shiftsPerWeek])
-                weeklyShiftsList.append(weeklyShifts)
-                if weeklyShifts > self.maxShiftsPerWeek:
-                    violations += weeklyShifts - self.maxShiftsPerWeek
+#                pdb.set_trace()
+                monthShifts = sum(docShifts[i:i + self.shiftsPerMonth])
+                monthShiftsList.append(monthShifts)
+                if monthShifts > self.maxShiftsPerMonth:
+                    violations += monthShifts - self.maxShiftsPerMonth
  
-        return weeklyShiftsList, violations
+        return monthShiftsList, violations
  
     def countDocsPerShiftViolations(self, docShiftsDict):
         """
@@ -224,8 +225,8 @@ class DocSchedulingProblem:
         print("consecutive shift violations = ", self.countConsecutiveShiftViolations(docShiftsDict))
         print()
  
-        weeklyShiftsList, violations = self.countShiftsPerMonthViolations(docShiftsDict)
-        print("weekly Shifts = ", weeklyShiftsList)
+        monthShiftsList, violations = self.countShiftsPerMonthViolations(docShiftsDict)
+        print("weekly Shifts = ", monthShiftsList)
         print("Shifts Per Week Violations = ", violations)
         print()
  
@@ -562,6 +563,7 @@ def printScheduleHumanSum(schedule, doc):
         docShiftsDict[d] = ar, sch_s
         shiftIndex += shiftsPerDoc
         sched_sum += sch_s
+        print()
 
     for d in docShiftsDict: 
         print(f'{d : <22}  {docShiftsDict[d][1] : ^5}'
