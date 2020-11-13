@@ -69,7 +69,7 @@ class Doc10SchedulingProblem:
     def getInitSchedule(self):
         """
         """
-        schedule = np.zeros(len(self),dtype=np.int8)
+        schedule = np.full(len(self),None)
         nmb_dejs = self.getNmbRealDejs()
         sched_days = np.arange(1,self.corps*self.days_in_month+1)
         sched_dejs = np.arange(0,nmb_dejs )
@@ -77,20 +77,31 @@ class Doc10SchedulingProblem:
         min_dist = 3
         
         cnt=0
-        while 0 in schedule:
+#        pdb.set_trace()
+        while len(np.isnan(schedule==None))>0: 
             
             d = np.random.choice(sched_days)
             dej = np.random.choice(sched_dejs)
+            print(cnt)
+            print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
 
             cnt+=1
 
             if self.isSuitableDej(schedule,dej,d, 
                     max_nmb_dej,min_dist):
+ #               pdb.set_trace()
+
                 schedule[d-1] = dej
+  #              print(schedule)
+ #               pdb.set_trace()
+                self.printScheduleHuman(schedule)
+                print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+            
 
-            if cnt >1000:
+#            input() 
+#            pdb.set_trace()
+            if cnt >2000:
                 break
-
 #        print(schedule)
 
         self.printScheduleHuman(schedule)
@@ -141,20 +152,26 @@ class Doc10SchedulingProblem:
         """
         
         if not self.isFreeDay(schedule,sched_day):
+            print(f'День {self.getDay(sched_day)} корпус {self.getCorpus(sched_day)} занят') 
             return False
 
 
         if not self.isSuitableCorpus(dej,sched_day):
+            print(f'Корпус {self.getCorpus(sched_day)} не походит') 
             return False
 
        
         if not self.isSuitableQuantity(schedule,dej,max_nmb_dej):
+            print('Количество дежурств не подходит ')
             return False
 
 
         if not self.isSuitableSequence(schedule,dej,
                 sched_day,min_dist):
+            print('Последовательность дежурств не походит')
             return False
+
+        print ('Все походит')
 
         return True
 
@@ -189,7 +206,7 @@ class Doc10SchedulingProblem:
 
     def isFreeDay(self,schedule,sched_day):
 
-        if schedule[sched_day-1] == 0 : 
+        if schedule[sched_day-1] == None : 
             return True 
         else:       
             return False
@@ -212,17 +229,45 @@ class Doc10SchedulingProblem:
         # попутно добавляем к фамилии И О
         i = self.getRealDejs()['NAME']
         o = self.getRealDejs()['SURNAME']
-        dejs =np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
-        
-        schedule_with_name = np.array([ dejs[i] for i in schedule ])
+        dejs = np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
+        sch_s = np.full_like(schedule,np.nan)
+ #       pdb.set_trace()
 
-        schedule_with_name = schedule_with_name.reshape(days,corps)
+        cnt = 0
+
+        for x,y in zip(schedule,sch_s):
+            print(cnt)
+            print(x,y)
+            print(type(x),type(y))
+            if pd.isnull(x) == False:
+                sch_s[cnt] = dejs[x] 
+#                input()
+ #           print(sch_s[cnt])
+       #     print(sch_s)
+  #          print('len ',len(sch_s))
+            cnt += 1
+#            input()
+
+
+
+
+#        print(sch_s)
+ #       input()
+
+
+ #       pdb.set_trace()
+
+        schedule_with_name = sch_s.reshape(corps,days)
+        schedule_with_name = schedule_with_name.transpose()
+#        pdb.set_trace()
+
 
         # формируем массив дат для конечной таблицы
         dates = np.arange(np.datetime64(dt.date(self.year,
             self.month,1)),days)
         # преобразуем его в столбец
         dates = dates.reshape(-1,1)
+
 
         # цепляем столбец с датами слева, попутно преобразуя
         # его в строку
@@ -242,6 +287,7 @@ class Doc10SchedulingProblem:
         print("Расписание дежурств УЗ 'МООД'")
         print("Месяц ",self.getMonth())
         print(df.to_string(index=False))
+#        pdb.set_trace()
  #       free_shifts = np.sum(pd.isnull(schedule_with_date))
  #       print('Свободных смен - ',free_shifts)
 
@@ -327,6 +373,12 @@ class Doc10SchedulingProblem:
             return days
         else:
             return n%days
+
+    def getDaysOfDoc(self,schedule,dej):
+        ar = np.where(schedule==dej)[0]
+        ret = [ (self.getDay(i+1),self.getCorpus(i+1)) for i in ar ]
+        return ret
+
 
 
 
