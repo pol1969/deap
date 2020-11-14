@@ -28,9 +28,10 @@ def test_isSuitableQuantity(setup10_docs):
     assert True == setup10_docs.isSuitableQuantity(sched,23,7)
 
 def test_isSuitableSequence(setup10_docs):
-    sched = np.zeros(len(setup10_docs),dtype=int)
+    sched = np.empty(len(setup10_docs),None)
     sched[[1,5,8,15,30,40]] = 23
     assert False == setup10_docs.isSuitableSequence(sched,23,4,3)
     assert False == setup10_docs.isSuitableSequence(sched,23,29,3)
     assert True == setup10_docs.isSuitableSequence(sched,23,27,3)
-    assert True == setup10_docs.isSuitableSequence(sched,23,35,3)
+    assert False == setup10_docs.isSuitableSequence(sched,23,41,3)
+

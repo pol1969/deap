@@ -73,17 +73,17 @@ class Doc10SchedulingProblem:
         nmb_dejs = self.getNmbRealDejs()
         sched_days = np.arange(1,self.corps*self.days_in_month+1)
         sched_dejs = np.arange(0,nmb_dejs )
-        max_nmb_dej = 4
+        max_nmb_dej = len(schedule)//nmb_dejs + 1 
         min_dist = 3
         
         cnt=0
 #        pdb.set_trace()
-        while len(np.isnan(schedule==None))>0: 
+        while len(sched_days)>0: 
             
             d = np.random.choice(sched_days)
             dej = np.random.choice(sched_dejs)
-            print(cnt)
-            print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+#            print(cnt)
+ #           print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
 
             cnt+=1
 
@@ -92,19 +92,31 @@ class Doc10SchedulingProblem:
  #               pdb.set_trace()
 
                 schedule[d-1] = dej
-  #              print(schedule)
- #               pdb.set_trace()
-                self.printScheduleHuman(schedule)
-                print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+
+                sched_days = np.delete(sched_days,
+                        np.where(sched_days==d))
+ #               if self.getDaysOfDoc(schedule,dej)[1] >= max_nmb_dej:
+ #                   sched_dejs = np.delete(sched_dejs,
+      #                      np.where(sched_dejs == dej))
+                
+ #               self.printScheduleHuman(schedule)
+#                print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
             
 
 #            input() 
 #            pdb.set_trace()
             if cnt >2000:
-                break
+                print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+                print(sched_days)
+                self.printScheduleHuman(schedule)
+                self.getDejsForDocs(schedule)   
+                break 
+  #              input()  
+#               break
 #        print(schedule)
 
         self.printScheduleHuman(schedule)
+        self.getDejsForDocs(schedule)   
       #  printScheduleHumanSum(schedule)
 
         return schedule
@@ -152,36 +164,36 @@ class Doc10SchedulingProblem:
         """
         
         if not self.isFreeDay(schedule,sched_day):
-            print(f'День {self.getDay(sched_day)} корпус {self.getCorpus(sched_day)} занят') 
+#            print(f'День {self.getDay(sched_day)} корпус {self.getCorpus(sched_day)} занят') 
             return False
-
 
         if not self.isSuitableCorpus(dej,sched_day):
-            print(f'Корпус {self.getCorpus(sched_day)} не походит') 
+  #          print(f'Корпус {self.getCorpus(sched_day)} не походит') 
             return False
-
        
         if not self.isSuitableQuantity(schedule,dej,max_nmb_dej):
-            print('Количество дежурств не подходит ')
+  #          print('Количество дежурств не подходит ')
             return False
 
 
         if not self.isSuitableSequence(schedule,dej,
                 sched_day,min_dist):
-            print('Последовательность дежурств не походит')
+ #           print('Последовательность дежурств не походит')
             return False
 
-        print ('Все походит')
+#        print ('Все походит')
 
         return True
 
 
 
     def isSuitableSequence(self,schedule,dej,sched_day,min_dist):
+  #      pdb.set_trace()
         ar = np.where(schedule == dej)[0]
         ar = ar + 1
         ar0 = np.array([self.getDay(i) for i in ar])
-        ar1 = ar0 - sched_day
+        day = self.getDay(sched_day)
+        ar1 = ar0 - day
         ar1 = abs(ar1)
         if np.any(ar1 <= min_dist):
             return False
@@ -231,35 +243,16 @@ class Doc10SchedulingProblem:
         o = self.getRealDejs()['SURNAME']
         dejs = np.array( fam+' '+ i.str[0] +'.' +o.str[0] +'.')
         sch_s = np.full_like(schedule,np.nan)
- #       pdb.set_trace()
 
         cnt = 0
 
         for x,y in zip(schedule,sch_s):
-            print(cnt)
-            print(x,y)
-            print(type(x),type(y))
             if pd.isnull(x) == False:
-                sch_s[cnt] = dejs[x] 
-#                input()
- #           print(sch_s[cnt])
-       #     print(sch_s)
-  #          print('len ',len(sch_s))
+                sch_s[cnt] = dejs[x]
             cnt += 1
-#            input()
-
-
-
-
-#        print(sch_s)
- #       input()
-
-
- #       pdb.set_trace()
 
         schedule_with_name = sch_s.reshape(corps,days)
         schedule_with_name = schedule_with_name.transpose()
-#        pdb.set_trace()
 
 
         # формируем массив дат для конечной таблицы
@@ -377,7 +370,14 @@ class Doc10SchedulingProblem:
     def getDaysOfDoc(self,schedule,dej):
         ar = np.where(schedule==dej)[0]
         ret = [ (self.getDay(i+1),self.getCorpus(i+1)) for i in ar ]
-        return ret
+        
+        return ret,len(ret)
+
+    def getDejsForDocs(self,schedule):
+        for i, dej in enumerate(self.docs_dej):
+            print(f'{dej: <22} {self.getDaysOfDoc(schedule,i)[1]:^5} '
+                  f'{self.getDaysOfDoc(schedule,i)[0]}')
+
 
 
 
