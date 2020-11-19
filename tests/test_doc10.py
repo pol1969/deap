@@ -35,3 +35,5 @@ def test_isSuitableSequence(setup10_docs):
     assert True == setup10_docs.isSuitableSequence(sched,23,27,3)
     assert False == setup10_docs.isSuitableSequence(sched,23,41,3)
 
+def test_isSuitableWish(setup10_docs):
+
