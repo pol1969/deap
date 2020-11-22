@@ -7,6 +7,7 @@ import numpy as np
 import datetime as dt 
 import pdb
 import time
+import os.path
 
 
 def test_getInitSchedule(setup10_docs):  
@@ -36,4 +37,30 @@ def test_isSuitableSequence(setup10_docs):
     assert False == setup10_docs.isSuitableSequence(sched,23,41,3)
 
 def test_isSuitableWish(setup10_docs):
+
+    if os.path.exists('wish.csv'):
+        print('Файл wish.csv существует, читаем ...')
+        dw = pd.read_csv('wish.csv')
+    else:
+        print('Файл wish.csv не существует, создаем ...')
+        
+        dw = pd.read_csv('lk_1.csv',usecols=[5])
+        arrays = [ np.random.choice(np.arange(1,32),10,
+            replace=False) for _ in range(df.shape[0])]
+
+        dw['NO'] = arrays
+        dw['Month'] = setup10_docs.getMonth()
+        dw['Year'] = setup10_docs.getYear()
+        dw.to_csv('wish.csv')
+
+    print(dw)
+    s = (dw.loc[38,'NO']).replace('[','')
+    s = (s).replace(']','')
+
+    ar = s.split()
+    ar = np.array(ar)
+    print(ar)
+    print(ar.astype(int))
+
+
 
