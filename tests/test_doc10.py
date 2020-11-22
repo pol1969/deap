@@ -46,7 +46,7 @@ def test_isSuitableWish(setup10_docs):
         
         dw = pd.read_csv('lk_1.csv',usecols=[5])
         arrays = [ np.random.choice(np.arange(1,32),10,
-            replace=False) for _ in range(df.shape[0])]
+            replace=False) for _ in range(dw.shape[0])]
 
         dw['NO'] = arrays
         dw['Month'] = setup10_docs.getMonth()
@@ -54,13 +54,17 @@ def test_isSuitableWish(setup10_docs):
         dw.to_csv('wish.csv')
 
     print(dw)
-    s = (dw.loc[38,'NO']).replace('[','')
-    s = (s).replace(']','')
+    ar = dw.loc[38,'NO']
 
-    ar = s.split()
-    ar = np.array(ar)
+    if isinstance(dw.loc[38,'NO'],str):
+        print('str')
+        s = (dw.loc[38,'NO']).replace('[','')
+        s = (s).replace(']','')
+        ar = np.array(s.split()).astype(int)
+    else:
+        print('not str')
+
     print(ar)
-    print(ar.astype(int))
 
 
 
