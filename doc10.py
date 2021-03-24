@@ -100,7 +100,7 @@ class Doc10SchedulingProblem:
       #                      np.where(sched_dejs == dej))
                 
  #               self.printScheduleHuman(schedule)
-#                print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+                print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
             
 
 #            input() 
@@ -113,11 +113,11 @@ class Doc10SchedulingProblem:
                 break 
   #              input()  
 #               break
-#        print(schedule)
+        print(schedule)
 
         self.printScheduleHuman(schedule)
         self.getDejsForDocs(schedule)   
-      #  printScheduleHumanSum(schedule)
+        self.printScheduleHumanSum(schedule)
 
         return schedule
 
@@ -295,15 +295,14 @@ class Doc10SchedulingProblem:
         :return требуемая таблица
         """
 
-        shiftsPerDoc = doc.getCorps()*doc.getDaysInMonth()
-        docs_dej = doc.docs_dej
+        shiftsPerDoc = self.getCorps()*self.getDaysInMonth()
 
         docShiftsDict = {}
-        days = doc.getDaysInMonth()
+        days = self.getDaysInMonth()
         shiftIndex = 0
         sched_sum = 0
 
-        for d in docs_dej:
+        for d in self.docs_dej:
             ar =  np.where(schedule[shiftIndex:shiftIndex 
                 + shiftsPerDoc]==1)[0]
             ar = np.fromiter((convFlattenToDejDayCorp(doc,

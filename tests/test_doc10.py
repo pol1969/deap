@@ -12,7 +12,7 @@ import os.path
 
 def test_getInitSchedule(setup10_docs):  
     sched = setup10_docs.getInitSchedule()
-#    print(setup10_docs.getDocShifts(sched))
+    print(setup10_docs.getDocShifts(sched))
 
 
 def test_getCorpus(setup10_docs):
@@ -28,6 +28,7 @@ def test_isSuitableQuantity(setup10_docs):
     assert False == setup10_docs.isSuitableQuantity(sched,23,4)
     assert True == setup10_docs.isSuitableQuantity(sched,23,7)
 
+@pytest.mark.skip
 def test_isSuitableSequence(setup10_docs):
     sched = np.empty(len(setup10_docs),None)
     sched[[1,5,8,15,30,40]] = 23
