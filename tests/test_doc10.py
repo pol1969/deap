@@ -12,7 +12,8 @@ import os.path
 
 def test_getInitSchedule(setup10_docs):  
     sched = setup10_docs.getInitSchedule()
-    print(setup10_docs.getDocShifts(sched))
+#    pdb.set_trace()
+#    print(setup10_docs.getDocShifts(sched))
 
 
 def test_getCorpus(setup10_docs):
