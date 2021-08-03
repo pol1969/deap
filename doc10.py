@@ -69,55 +69,70 @@ class Doc10SchedulingProblem:
     def getInitSchedule(self):
         """
         """
+        # получить общее количество дежурств за месяц
+        # на все корпусах
         schedule = np.full(len(self),None)
+        
+        # получить количество дежурантов
         nmb_dejs = self.getNmbRealDejs()
-        sched_days = np.arange(1,self.corps*self.days_in_month+1)
+
+        # получить массив чисел от 1 до 93(90) по количеству
+        # дежурств на всех корпусах
+        sched_days = np.arange(1,len(self)+1)
+
+        # получить массив чисел от 0 до n-1 
+        # по числу дежурантов
         sched_dejs = np.arange(0,nmb_dejs )
+
+        # целое среднее количество дежурств на
+        # днжуранта + 1
         max_nmb_dej = len(schedule)//nmb_dejs + 1 
+
+        # минимальное количество дней между 
+        # повторными дежурствами
         min_dist = 3
         
         cnt=0
 #        pdb.set_trace()
+        
+        # пока будут оставаться свободные дежурства
         while len(sched_days)>0: 
-            
+
+            # выбрать случайный день и 
+            # случайного дежуранта
             d = np.random.choice(sched_days)
             dej = np.random.choice(sched_dejs)
-#            print(cnt)
- #           print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
 
             cnt+=1
-
+            # если дежурство подходит
             if self.isSuitableDej(schedule,dej,d, 
                     max_nmb_dej,min_dist):
  #               pdb.set_trace()
-
+                
+                # то добавить его в график
                 schedule[d-1] = dej
+
+                # и удалить из списка свободных дежурств
 
                 sched_days = np.delete(sched_days,
                         np.where(sched_days==d))
- #               if self.getDaysOfDoc(schedule,dej)[1] >= max_nmb_dej:
- #                   sched_dejs = np.delete(sched_dejs,
-      #                      np.where(sched_dejs == dej))
-                
- #               self.printScheduleHuman(schedule)
-#                print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+ #               print(f'Присвоили День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
             
 
 #            input() 
 #            pdb.set_trace()
             if cnt >2000:
-                print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
-                print(sched_days)
-                self.printScheduleHuman(schedule)
-                self.getDejsForDocs(schedule)   
+ #               print(f'День {self.getDay(d)} корпус {self.getCorpus(d)} дежурант {dej} {self.docs_dej[dej]} стоят {self.getDaysOfDoc(schedule,dej)}')
+  #              print(sched_days)
+   #             self.printScheduleHuman(schedule)
+ #               self.getDejsForDocs(schedule)   
                 break 
   #              input()  
 #               break
-#        print(schedule)
+  #      print(schedule)
 
         self.printScheduleHuman(schedule)
         self.getDejsForDocs(schedule)   
-      #  printScheduleHumanSum(schedule)
 
         return schedule
 
@@ -285,41 +300,6 @@ class Doc10SchedulingProblem:
  #       print('Свободных смен - ',free_shifts)
 
         return schedule_with_date
-
-
-    def printScheduleHumanSum(self,schedule):
-        """
-        Выводит расписание в нужном конечном формате
-        :schedule ДНК расписания, двоичный 1d массив
-        :doc - объект DocSchedulingProblem
-        :return требуемая таблица
-        """
-
-        shiftsPerDoc = doc.getCorps()*doc.getDaysInMonth()
-        docs_dej = doc.docs_dej
-
-        docShiftsDict = {}
-        days = doc.getDaysInMonth()
-        shiftIndex = 0
-        sched_sum = 0
-
-        for d in docs_dej:
-            ar =  np.where(schedule[shiftIndex:shiftIndex 
-                + shiftsPerDoc]==1)[0]
-            ar = np.fromiter((convFlattenToDejDayCorp(doc,
-                i,days)[1] for i in ar),dtype=int)
-            sch_s = np.sum(
-                    schedule[shiftIndex:shiftIndex + shiftsPerDoc])
-        
-            docShiftsDict[d] = ar, sch_s
-            shiftIndex += shiftsPerDoc
-            sched_sum += sch_s
-            print()
-
-        for d in docShiftsDict: 
-            print(f'{d : <22}  {docShiftsDict[d][1] : ^5}'
-                  f'{docShiftsDict[d][0] }')
-        print(f'Занято {sched_sum} смен')
 
 
     def isCorpRight(self,dej_corp,possible_corpus):
