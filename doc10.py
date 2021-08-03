@@ -188,7 +188,7 @@ class Doc10SchedulingProblem:
 
 
     def isSuitableSequence(self,schedule,dej,sched_day,min_dist):
-  #      pdb.set_trace()
+        pdb.set_trace()
         ar = np.where(schedule == dej)[0]
         ar = ar + 1
         ar0 = np.array([self.getDay(i) for i in ar])
@@ -387,17 +387,18 @@ def main():
     # create a problem instance:
     p = pd.read_csv("lk_1.csv")
 
-    doc  = DocSchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
+    doc  = Doc10SchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
 #    pdb.set_trace()
+#    print(dir(doc))
  
-    randomSolution = getInitShedule(doc)
+    randomSolution = doc.getInitSchedule()
 
     print("Random Solution = ")
     print(randomSolution)
     print()
     print("Len randomSolution = ", len(randomSolution))
  
-    doc.printScheduleInfo(randomSolution)
+   # doc.printScheduleInfo(randomSolution)
  
     print("Total Cost = ", doc.getCost(randomSolution))
 

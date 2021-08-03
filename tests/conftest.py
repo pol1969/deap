@@ -9,13 +9,29 @@ import datetime as dt
 def setup_docs():
 #    print("setup_docs")  
     p = pd.read_csv("lk_1.csv")
-    docShed = DocSchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
+
+    month = dt.datetime.now().month +1
+    year = dt.datetime.now().year
+    if month==13:
+        month =1
+        year = year +1
+
+    docShed = DocSchedulingProblem(10,p,month,year)
     return docShed
 
 @pytest.fixture()
 def setup10_docs():
 #    print("setup_docs")  
     p = pd.read_csv("lk_1.csv")
-    docShed = Doc10SchedulingProblem(10,p,dt.datetime.now().month+1,dt.datetime.now().year)
+    
+    month = dt.datetime.now().month +1
+    year = dt.datetime.now().year
+    if month==13:
+        month =1
+        year = year +1
+
+
+    docShed = Doc10SchedulingProblem(10,p,month,year)
+
     return docShed
  

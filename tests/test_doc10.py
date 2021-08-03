@@ -30,6 +30,7 @@ def test_isSuitableQuantity(setup10_docs):
 
 def test_isSuitableSequence(setup10_docs):
     sched = np.empty(len(setup10_docs),None)
+#    pdb.set_trace()
     sched[[1,5,8,15,30,40]] = 23
     assert False == setup10_docs.isSuitableSequence(sched,23,4,3)
     assert False == setup10_docs.isSuitableSequence(sched,23,29,3)
