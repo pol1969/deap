@@ -203,7 +203,7 @@ class Doc10SchedulingProblem:
 
 
     def isSuitableSequence(self,schedule,dej,sched_day,min_dist):
-        pdb.set_trace()
+        #pdb.set_trace()
         ar = np.where(schedule == dej)[0]
         ar = ar + 1
         ar0 = np.array([self.getDay(i) for i in ar])
